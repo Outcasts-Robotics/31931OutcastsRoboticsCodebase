@@ -10,6 +10,12 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.teamcode.vision.WebcamProcessor;
+
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
             .mass(6) // tuning - mass in kg
@@ -35,7 +41,7 @@ public class Constants {
     public static Follower createFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .pathConstraints(pathConstraints)
-                .twoWheelLocalizer(localizerConstants)
+//                .twoWheelLocalizer(localizerConstants)
                 .mecanumDrivetrain(mecanumConstants)
                 .build();
     }
@@ -53,4 +59,13 @@ public class Constants {
             .forwardTicksToInches(.001989436789)  // tuning - encoder
             .strafeTicksToInches(.001989436789)  // tuning - encoder
             ;
+
+    public static WebcamProcessor.Inputs webcamProcessorInputs = new WebcamProcessor.Inputs() {
+        {
+            cameraPosition = new Position(DistanceUnit.INCH, 3, 3, 3, 0);
+            cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0, -5, 0, 0);
+            detectionMaxAgeMs = 300;
+            telemetryDetails = true;
+        }
+    };
 }
