@@ -61,8 +61,13 @@ public class WebcamProcessor {
         if (visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING) {
             telemetry.addData("Camera", "Waiting for camera to stream");
             telemetry.update();
-            while (visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING)
-                BaseOpMode.sleep(20);
+            while (visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING) {
+                try {
+                    Thread.sleep(20);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
             telemetry.addData("Camera", "Ready");
             telemetry.update();
         }
