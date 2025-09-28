@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 public class MecanumDrive {
@@ -15,8 +16,9 @@ public class MecanumDrive {
     private final DcMotorEx backLeftMotor;
     private final DcMotorEx backRightMotor;
     private final IMU imu;
+    private final Telemetry telemetry;
 
-    public MecanumDrive(HardwareMap hw, MecanumConstants mecanumConstants, String imuName) {
+    public MecanumDrive(HardwareMap hw, MecanumConstants mecanumConstants, String imuName, Telemetry telemetry) {
         frontLeftMotor = hw.get(DcMotorEx.class, mecanumConstants.leftFrontMotorName);
         frontRightMotor = hw.get(DcMotorEx.class, mecanumConstants.rightFrontMotorName);
         backLeftMotor = hw.get(DcMotorEx.class, mecanumConstants.leftRearMotorName);
@@ -30,14 +32,16 @@ public class MecanumDrive {
         maxPower = mecanumConstants.maxPower;
 
         imu = imuName == null ? null : hw.get(IMU.class, imuName);
+        this.telemetry = telemetry;
     }
 
     public void loopUpdate(Gamepad gamepad) {
         if (imu != null && gamepad.aWasPressed()) {
             imu.resetYaw();
+            telemetry.addLine("Resetting IMU");
         }
 
-        double speedScale = 0.2 + (1 - gamepad.right_trigger) * 0.8;
+        double speedScale = 0.35 + (1 - gamepad.right_trigger) * 0.65;
         boolean relativeToBot = imu == null || gamepad.left_bumper;
         setDrive(-gamepad.left_stick_y * speedScale,
                 gamepad.left_stick_x * speedScale,
