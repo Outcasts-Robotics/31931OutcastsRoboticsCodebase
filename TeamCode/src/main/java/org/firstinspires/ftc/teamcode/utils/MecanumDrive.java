@@ -15,10 +15,11 @@ public class MecanumDrive {
     private final DcMotorEx frontRightMotor;
     private final DcMotorEx backLeftMotor;
     private final DcMotorEx backRightMotor;
+    private final SlewRateLimiter flSlew, frSlew, blSlew, brSlew;
     private final IMU imu;
     private final Telemetry telemetry;
 
-    public MecanumDrive(HardwareMap hw, MecanumConstants mecanumConstants, String imuName, Telemetry telemetry) {
+    public MecanumDrive(HardwareMap hw, MecanumConstants mecanumConstants, String imuName, Telemetry telemetry, double slewRate) {
         frontLeftMotor = hw.get(DcMotorEx.class, mecanumConstants.leftFrontMotorName);
         frontRightMotor = hw.get(DcMotorEx.class, mecanumConstants.rightFrontMotorName);
         backLeftMotor = hw.get(DcMotorEx.class, mecanumConstants.leftRearMotorName);
@@ -33,6 +34,11 @@ public class MecanumDrive {
 
         imu = imuName == null ? null : hw.get(IMU.class, imuName);
         this.telemetry = telemetry;
+
+        flSlew = new SlewRateLimiter(slewRate);
+        frSlew = new SlewRateLimiter(slewRate);
+        blSlew = new SlewRateLimiter(slewRate);
+        brSlew = new SlewRateLimiter(slewRate);
     }
 
     public void loopUpdate(Gamepad gamepad) {
@@ -76,10 +82,10 @@ public class MecanumDrive {
             max = Math.max(max, Math.abs(backRightPower));
             max = Math.max(max, Math.abs(backLeftPower));
 
-            frontLeftMotor.setPower(maxPower * (frontLeftPower / max));
-            frontRightMotor.setPower(maxPower * (frontRightPower / max));
-            backLeftMotor.setPower(maxPower * (backLeftPower / max));
-            backRightMotor.setPower(maxPower * (backRightPower / max));
+            frontLeftMotor.setPower(flSlew.apply(maxPower * (frontLeftPower / max)));
+            frontRightMotor.setPower(frSlew.apply(maxPower * (frontRightPower / max)));
+            backLeftMotor.setPower(blSlew.apply(maxPower * (backLeftPower / max)));
+            backRightMotor.setPower(brSlew.apply(maxPower * (backRightPower / max)));
         }
     }
 }

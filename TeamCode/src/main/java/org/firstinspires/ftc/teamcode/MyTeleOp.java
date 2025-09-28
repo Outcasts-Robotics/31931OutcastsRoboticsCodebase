@@ -35,7 +35,7 @@ public class MyTeleOp extends OpMode {
         webcamProcessor = new WebcamProcessor(webcam1, telemetry, Constants.webcamProcessorInputs);
         webcamProcessor.initialize();
 
-        mecanumDrive = new MecanumDrive(hardwareMap, Constants.mecanumConstants, "imu", telemetry);
+        mecanumDrive = new MecanumDrive(hardwareMap, Constants.mecanumConstants, "imu", telemetry, 0.6);
 
 //        follower = Constants.createFollower(hardwareMap);
     }

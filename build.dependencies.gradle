@@ -19,5 +19,8 @@ dependencies {
     implementation 'com.pedropathing:ftc:2.0.1'
     implementation 'com.pedropathing:telemetry:0.0.6'
     implementation 'com.bylazar:fullpanels:1.0.0'
+
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "org.mockito:mockito-core:5.20.0"
 }
 
