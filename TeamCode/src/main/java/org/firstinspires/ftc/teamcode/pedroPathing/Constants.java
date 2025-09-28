@@ -23,15 +23,15 @@ public class Constants {
             .lateralZeroPowerAcceleration(-78.15554) // tuning - lateral deceleration
             ;
     public static MecanumConstants mecanumConstants = new MecanumConstants()
-            .maxPower(1)
+            .maxPower(0.8)
             .leftFrontMotorName("lf")
             .rightFrontMotorName("rf")
             .leftRearMotorName("lr")
             .rightRearMotorName("rr")
             .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
             .xVelocity(81) // tuning - forward max velocity
             .yVelocity(65) // tuning - sideway max velocity
             ;
@@ -41,7 +41,7 @@ public class Constants {
     public static Follower createFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .pathConstraints(pathConstraints)
-//                .twoWheelLocalizer(localizerConstants)
+                .twoWheelLocalizer(localizerConstants)
                 .mecanumDrivetrain(mecanumConstants)
                 .build();
     }
@@ -54,7 +54,7 @@ public class Constants {
             .IMU_HardwareMapName("imu")
             .IMU_Orientation(new RevHubOrientationOnRobot(
                     RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                    RevHubOrientationOnRobot.UsbFacingDirection.LEFT
+                    RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
             ))
             .forwardTicksToInches(.001989436789)  // tuning - encoder
             .strafeTicksToInches(.001989436789)  // tuning - encoder
