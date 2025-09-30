@@ -43,18 +43,19 @@ public class PIDController {
     /**
      * @param value current value
      * @param target target value
-     * @return input for algo
+     * @return calculated PID output
      */
     public double calculate(double value, double target) {
         if (timer.seconds() > 5) {  // if lagged too long, integral term will be too large
             reset();
         }
         double dt = timer.seconds();
+
         double et = target - value;
         double p = kp * et;
         integralError += et * dt;
         double i = ki * integralError;
-        double d = kd * (et - lastError) / dt;
+        double d = Math.abs(dt) < 1e-6 ? 0 : kd * (et - lastError) / dt;
         lastError = et;
         timer.reset();
         return p + i + d;

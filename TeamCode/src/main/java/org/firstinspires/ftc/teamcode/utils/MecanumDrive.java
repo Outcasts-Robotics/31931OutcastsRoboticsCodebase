@@ -37,7 +37,7 @@ public class MecanumDrive {
         imu = imuName == null ? null : hw.get(IMU.class, imuName);
         this.telemetry = telemetry;
 
-        // slew rate limiter - down rate doubled to brake faster
+        // slew rate limiter - brake rate doubled for faster slowdown
         flSlew = new UpDownSlewRateLimiter(slewRate, slewRate * 2, true);
         frSlew = new UpDownSlewRateLimiter(slewRate, slewRate * 2, true);
         blSlew = new UpDownSlewRateLimiter(slewRate, slewRate * 2, true);
@@ -83,16 +83,16 @@ public class MecanumDrive {
             double backRightPower = forward + strafe - rotate;
             double backLeftPower = forward - strafe + rotate;
 
-            double max = maxPower;
-            max = Math.max(max, Math.abs(frontLeftPower));
-            max = Math.max(max, Math.abs(frontRightPower));
-            max = Math.max(max, Math.abs(backRightPower));
-            max = Math.max(max, Math.abs(backLeftPower));
+            double denominator = 1.0;
+            denominator = Math.max(denominator, Math.abs(frontLeftPower));
+            denominator = Math.max(denominator, Math.abs(frontRightPower));
+            denominator = Math.max(denominator, Math.abs(backRightPower));
+            denominator = Math.max(denominator, Math.abs(backLeftPower));
 
-            frontLeftMotor.setPower(flSlew.apply(maxPower * (frontLeftPower / max)));
-            frontRightMotor.setPower(frSlew.apply(maxPower * (frontRightPower / max)));
-            backLeftMotor.setPower(blSlew.apply(maxPower * (backLeftPower / max)));
-            backRightMotor.setPower(brSlew.apply(maxPower * (backRightPower / max)));
+            frontLeftMotor.setPower(flSlew.apply(maxPower * (frontLeftPower / denominator)));
+            frontRightMotor.setPower(frSlew.apply(maxPower * (frontRightPower / denominator)));
+            backLeftMotor.setPower(blSlew.apply(maxPower * (backLeftPower / denominator)));
+            backRightMotor.setPower(brSlew.apply(maxPower * (backRightPower / denominator)));
         }
     }
 }

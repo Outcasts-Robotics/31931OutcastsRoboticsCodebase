@@ -17,6 +17,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Manages a webcam and AprilTag processing for robot vision.
+ * Handles camera initialization, exposure/gain control, detection filtering,
+ * and provides the last known relevant AprilTag detection.
+ */
 public class WebcamProcessor {
 
     public static class Inputs {
@@ -27,17 +32,20 @@ public class WebcamProcessor {
         public boolean detectAllTags;  // non competition use
     }
 
+    // Camera and robot configuration
     private final Position cameraPosition;
     private final YawPitchRollAngles cameraOrientation;
     private final int detectionMaxAgeMs;
     private final boolean telemetryDetails;
 
+    // Hardware and FTC SDK components
     private final WebcamName webcam;
     private final Telemetry telemetry;
     private final boolean detectAllTags;
     private VisionPortal visionPortal;
     private AprilTagProcessor aprilTagProcessor;
 
+    // Camera control parameters (cached after initialization)
     int minExposure;
     int maxExposure;
     int stepExposure;
@@ -45,6 +53,9 @@ public class WebcamProcessor {
     int maxGain;
     int stepGain;
 
+    /**
+     * Stores the most recently processed, relevant AprilTag detection.
+     */
     private AprilTagDetection lastDetection;
 
     public WebcamProcessor(WebcamName webcam, Telemetry telemetry, Inputs inputs) {
@@ -130,12 +141,20 @@ public class WebcamProcessor {
     }
 
     /**
-     * Processing can be paused/resumed. Use if necessary to save CPU or bandwidth.
+     * Enables or disables the AprilTag processor.
+     * Call this to save CPU resources when AprilTag detection is not needed.
+     *
+     * @param enabled True to enable processing, false to disable.
      */
     public void setProcessing(boolean enabled) {
         visionPortal.setProcessorEnabled(aprilTagProcessor, enabled);
     }
 
+    /**
+     * Main processing loop. Fetches fresh AprilTag detections, filters for the most relevant one
+     * (closest, valid pose, and matching ID criteria), updates {@link #lastDetection},
+     * and logs telemetry.
+     */
     public void loopUpdate() {
         List<AprilTagDetection> freshDetections = aprilTagProcessor.getFreshDetections();
         if (freshDetections != null) {
@@ -144,20 +163,26 @@ public class WebcamProcessor {
                             detectAllTags || Tags.isPositionTagId(detection.id))
                     .min((d1, d2) -> {
                         if (d1.id == d2.id) return 0;
+                        if (d1.ftcPose == null && d2.ftcPose == null) return 0;
                         if (d1.ftcPose == null) return 1;
                         if (d2.ftcPose == null) return -1;
-                        if (d2.ftcPose.range == d1.ftcPose.range) return 0;
-                        return d2.ftcPose.range > d1.ftcPose.range ? 1 : -1;
+                        return Double.compare(d1.ftcPose.range, d2.ftcPose.range);
                     });
             if (minRangeTag.isPresent() && minRangeTag.get().ftcPose != null) {
                 lastDetection = minRangeTag.get();
+            } else {
+                checkAndInvalidateStaleDetection();
             }
         } else {
-            long age = detectionAgeInMs();
-            if (age != -1 && age > detectionMaxAgeMs)
-                lastDetection = null;
+            checkAndInvalidateStaleDetection();
         }
         logTelemetry();
+    }
+
+    private void checkAndInvalidateStaleDetection() {
+        long age = detectionAgeInMs();
+        if (age != -1 && age > detectionMaxAgeMs)
+            lastDetection = null;
     }
 
     private void logTelemetry() {
