@@ -14,6 +14,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public class WebcamProcessor {
@@ -23,6 +24,7 @@ public class WebcamProcessor {
         public YawPitchRollAngles cameraOrientation;
         public int detectionMaxAgeMs;  // this should be higher than camera refresh time
         public boolean telemetryDetails;
+        public boolean detectAllTags;  // non competition use
     }
 
     private final Position cameraPosition;
@@ -32,6 +34,7 @@ public class WebcamProcessor {
 
     private final WebcamName webcam;
     private final Telemetry telemetry;
+    private final boolean detectAllTags;
     private VisionPortal visionPortal;
     private AprilTagProcessor aprilTagProcessor;
 
@@ -51,6 +54,7 @@ public class WebcamProcessor {
         this.cameraOrientation = inputs.cameraOrientation;
         this.detectionMaxAgeMs = inputs.detectionMaxAgeMs;
         this.telemetryDetails = inputs.telemetryDetails;
+        this.detectAllTags = inputs.detectAllTags;
     }
 
     public void initialize() {
@@ -135,10 +139,18 @@ public class WebcamProcessor {
     public void loopUpdate() {
         List<AprilTagDetection> freshDetections = aprilTagProcessor.getFreshDetections();
         if (freshDetections != null) {
-            for (AprilTagDetection detection : freshDetections) {
-                if (Tags.isPositionTagId(detection.id)) {
-                    this.lastDetection = detection;
-                }
+            Optional<AprilTagDetection> minRangeTag = freshDetections.stream()
+                    .filter(detection ->
+                            detectAllTags || Tags.isPositionTagId(detection.id))
+                    .min((d1, d2) -> {
+                        if (d1.id == d2.id) return 0;
+                        if (d1.ftcPose == null) return 1;
+                        if (d2.ftcPose == null) return -1;
+                        if (d2.ftcPose.range == d1.ftcPose.range) return 0;
+                        return d2.ftcPose.range > d1.ftcPose.range ? 1 : -1;
+                    });
+            if (minRangeTag.isPresent() && minRangeTag.get().ftcPose != null) {
+                lastDetection = minRangeTag.get();
             }
         } else {
             long age = detectionAgeInMs();
@@ -170,5 +182,9 @@ public class WebcamProcessor {
             return (System.nanoTime() - lastDetection.frameAcquisitionNanoTime) / 1000000;
         }
         return -1;
+    }
+
+    public AprilTagDetection getLastDetection() {
+        return lastDetection;
     }
 }

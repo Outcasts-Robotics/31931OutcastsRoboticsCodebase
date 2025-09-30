@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.utils;
 
+import static androidx.core.math.MathUtils.clamp;
+
 import com.pedropathing.ftc.drivetrains.MecanumConstants;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -15,7 +17,7 @@ public class MecanumDrive {
     private final DcMotorEx frontRightMotor;
     private final DcMotorEx backLeftMotor;
     private final DcMotorEx backRightMotor;
-    private final SlewRateLimiter flSlew, frSlew, blSlew, brSlew;
+    private final UpDownSlewRateLimiter flSlew, frSlew, blSlew, brSlew;
     private final IMU imu;
     private final Telemetry telemetry;
 
@@ -35,23 +37,28 @@ public class MecanumDrive {
         imu = imuName == null ? null : hw.get(IMU.class, imuName);
         this.telemetry = telemetry;
 
-        flSlew = new SlewRateLimiter(slewRate);
-        frSlew = new SlewRateLimiter(slewRate);
-        blSlew = new SlewRateLimiter(slewRate);
-        brSlew = new SlewRateLimiter(slewRate);
+        // slew rate limiter - down rate doubled to brake faster
+        flSlew = new UpDownSlewRateLimiter(slewRate, slewRate * 2, true);
+        frSlew = new UpDownSlewRateLimiter(slewRate, slewRate * 2, true);
+        blSlew = new UpDownSlewRateLimiter(slewRate, slewRate * 2, true);
+        brSlew = new UpDownSlewRateLimiter(slewRate, slewRate * 2, true);
     }
 
-    public void loopUpdate(Gamepad gamepad) {
+    public void loopUpdate(Gamepad gamepad, double yawPid) {
         if (imu != null && gamepad.aWasPressed()) {
             imu.resetYaw();
             telemetry.addLine("Resetting IMU");
         }
 
-        double speedScale = 0.35 + (1 - gamepad.right_trigger) * 0.65;
+        double speedScale = 0.3 + (1 - gamepad.right_trigger) * 0.7; // slow down to 30%
+
         boolean relativeToBot = imu == null || gamepad.left_bumper;
+
+        yawPid = clamp(yawPid, -0.45, 0.45); // max rotation speed is clamped to avoid over spinning
+
         setDrive(-gamepad.left_stick_y * speedScale,
                 gamepad.left_stick_x * speedScale,
-                gamepad.right_stick_x * speedScale,
+                gamepad.right_stick_x * speedScale + yawPid,
                 relativeToBot);
     }
 

@@ -66,6 +66,7 @@ public class Constants {
             cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0, -5, 0, 0);
             detectionMaxAgeMs = 300;
             telemetryDetails = true;
+            detectAllTags = true;
         }
     };
 }

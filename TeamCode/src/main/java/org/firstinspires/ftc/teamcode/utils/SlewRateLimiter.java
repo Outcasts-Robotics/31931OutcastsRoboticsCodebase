@@ -21,6 +21,10 @@ public class SlewRateLimiter {
         this.timer.reset();
     }
 
+    public void setPreviousValue(double previousValue) {
+        this.previousValue = previousValue;
+    }
+
     public double apply(double targetValue) {
         if (rate <= 0.0) return targetValue;
         double deltaTime = timer.seconds();
