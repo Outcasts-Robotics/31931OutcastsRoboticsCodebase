@@ -4,9 +4,9 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.ftc.FollowerBuilder;
 import com.pedropathing.ftc.drivetrains.MecanumConstants;
-import com.pedropathing.ftc.localization.constants.TwoWheelConstants;
+import com.pedropathing.ftc.localization.constants.PinpointConstants;
 import com.pedropathing.paths.PathConstraints;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -15,6 +15,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.teamcode.vision.WebcamProcessor;
+
+import java.util.function.Consumer;
 
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
@@ -37,28 +39,20 @@ public class Constants {
             ;
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
+    public static PinpointConstants pinpointConstants = new PinpointConstants()
+            .hardwareMapName("pinpoint")
+            .forwardPodY(-2)
+            .strafePodX(-5)
+            .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED)
+            .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
 
     public static Follower createFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)
                 .pathConstraints(pathConstraints)
-                .twoWheelLocalizer(localizerConstants)
+                .pinpointLocalizer(pinpointConstants)
                 .mecanumDrivetrain(mecanumConstants)
                 .build();
     }
-
-    public static TwoWheelConstants localizerConstants = new TwoWheelConstants()
-            .forwardEncoder_HardwareMapName("forward_encoder")
-            .strafeEncoder_HardwareMapName("strafe_encoder")
-            .forwardPodY(-8) // tuning - inches from center of rotation
-            .strafePodX(-8)  // tuning - inches from center of rotation
-            .IMU_HardwareMapName("imu")
-            .IMU_Orientation(new RevHubOrientationOnRobot(
-                    RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                    RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
-            ))
-            .forwardTicksToInches(.001989436789)  // tuning - encoder
-            .strafeTicksToInches(.001989436789)  // tuning - encoder
-            ;
 
     public static WebcamProcessor.Inputs webcamProcessorInputs = new WebcamProcessor.Inputs() {
         {

@@ -1,20 +1,21 @@
 package org.firstinspires.ftc.teamcode;
 
 
-import static androidx.core.math.MathUtils.clamp;
-
 import com.pedropathing.follower.Follower;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
+import com.pedropathing.ftc.localization.localizers.PinpointLocalizer;
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.utils.AutoAim;
 import org.firstinspires.ftc.teamcode.utils.MecanumDrive;
 import org.firstinspires.ftc.teamcode.vision.WebcamProcessor;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+
+import java.util.function.DoubleSupplier;
 
 
 @TeleOp(name = "MyTeleOp", group = "TeleOp")
@@ -24,27 +25,31 @@ public class MyTeleOp extends OpMode {
     private WebcamName webcam1;
     private WebcamProcessor webcamProcessor;
     private AutoAim autoAim;
+    private PinpointLocalizer pinpointLocalizer;
 
 
     @Override
     public void init() {
         telemetry.addData("Status", "Initializing");
 
-        IMU imu = hardwareMap.get(IMU.class, "imu");
-        imu.initialize(new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
-        )));
+        pinpointLocalizer = new PinpointLocalizer(hardwareMap, Constants.pinpointConstants);
+        pinpointLocalizer.resetIMU();
 
         webcam1 = hardwareMap.get(WebcamName.class, "Webcam 1");
         webcamProcessor = new WebcamProcessor(webcam1, telemetry, Constants.webcamProcessorInputs);
         webcamProcessor.initialize();
 
-        mecanumDrive = new MecanumDrive(hardwareMap, Constants.mecanumConstants, "imu", telemetry, 1);
+        DoubleSupplier yawInRadProvider = () -> pinpointLocalizer.getPose().getHeading();
+        mecanumDrive = new MecanumDrive(hardwareMap, Constants.mecanumConstants, telemetry, 1.0, yawInRadProvider);
 
 //        follower = Constants.createFollower(hardwareMap);
 
-        autoAim = new AutoAim(imu);
+        DoubleSupplier yawInDegProvider = () -> radToDeg(pinpointLocalizer.getPose().getHeading());
+        autoAim = new AutoAim(yawInDegProvider);
+    }
+
+    private double radToDeg(double radians) {
+        return AngleUnit.DEGREES.fromRadians(radians);
     }
 
     @Override
@@ -60,6 +65,8 @@ public class MyTeleOp extends OpMode {
     @Override
     public void loop() {
         if (webcamProcessor != null) webcamProcessor.loopUpdate();
+
+        pinpointLocalizer.update(); // update pose
 
         boolean autoAimEnabled = false;
         if (gamepad1.left_trigger > 0.2 && webcamProcessor != null) {

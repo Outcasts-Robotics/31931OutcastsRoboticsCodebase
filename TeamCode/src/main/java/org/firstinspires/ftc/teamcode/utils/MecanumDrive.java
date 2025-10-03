@@ -6,22 +6,24 @@ import com.pedropathing.ftc.drivetrains.MecanumConstants;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.IMU;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
+import java.util.function.DoubleSupplier;
+
 public class MecanumDrive {
+    private final double staticFrictionPower;  // min power to have any movement
     private final double maxPower;
     private final DcMotorEx frontLeftMotor;
     private final DcMotorEx frontRightMotor;
     private final DcMotorEx backLeftMotor;
     private final DcMotorEx backRightMotor;
     private final UpDownSlewRateLimiter flSlew, frSlew, blSlew, brSlew;
-    private final IMU imu;
+    private final DoubleSupplier yawInRadProvider;
     private final Telemetry telemetry;
 
-    public MecanumDrive(HardwareMap hw, MecanumConstants mecanumConstants, String imuName, Telemetry telemetry, double slewRate) {
+    public MecanumDrive(HardwareMap hw, MecanumConstants mecanumConstants, Telemetry telemetry, double slewRate, DoubleSupplier yawInRadProvider) {
         frontLeftMotor = hw.get(DcMotorEx.class, mecanumConstants.leftFrontMotorName);
         frontRightMotor = hw.get(DcMotorEx.class, mecanumConstants.rightFrontMotorName);
         backLeftMotor = hw.get(DcMotorEx.class, mecanumConstants.leftRearMotorName);
@@ -34,27 +36,32 @@ public class MecanumDrive {
 
         maxPower = mecanumConstants.maxPower;
 
-        imu = imuName == null ? null : hw.get(IMU.class, imuName);
         this.telemetry = telemetry;
+        this.yawInRadProvider = yawInRadProvider;
 
         // slew rate limiter - brake rate doubled for faster slowdown
         flSlew = new UpDownSlewRateLimiter(slewRate, slewRate * 2, true);
         frSlew = new UpDownSlewRateLimiter(slewRate, slewRate * 2, true);
         blSlew = new UpDownSlewRateLimiter(slewRate, slewRate * 2, true);
         brSlew = new UpDownSlewRateLimiter(slewRate, slewRate * 2, true);
+
+        staticFrictionPower = 0.1;
     }
 
     public void loopUpdate(Gamepad gamepad, double yawPid) {
-        if (imu != null && gamepad.aWasPressed()) {
-            imu.resetYaw();
-            telemetry.addLine("Resetting IMU");
-        }
-
         double speedScale = 0.3 + (1 - gamepad.right_trigger) * 0.7; // slow down to 30%
 
-        boolean relativeToBot = imu == null || gamepad.left_bumper;
+        boolean relativeToBot = yawInRadProvider == null || gamepad.left_bumper;
 
-        yawPid = clamp(yawPid, -0.45, 0.45); // max rotation speed is clamped to avoid over spinning
+        // pid deadzone
+        if (Math.abs(yawPid) < 0.06) {
+            yawPid = 0;
+        }
+
+        yawPid = clamp(yawPid, -0.3, 0.3); // max rotation speed is clamped to avoid over spinning
+        if (Math.abs(yawPid) < staticFrictionPower) {
+            yawPid = staticFrictionPower * Math.signum(yawPid);
+        }
 
         setDrive(-gamepad.left_stick_y * speedScale,
                 gamepad.left_stick_x * speedScale,
@@ -62,14 +69,13 @@ public class MecanumDrive {
                 relativeToBot);
     }
 
-    private void setDrive(double forward, double strafe, double rotate, boolean relativeToBot) {
+    public void setDrive(double forward, double strafe, double rotate, boolean relativeToBot) {
         if (!relativeToBot) {
             double theta = Math.atan2(forward, strafe);
             double r = Math.hypot(strafe, forward);
 
             // Second, rotate angle by the angle the robot is pointing
-            theta = AngleUnit.normalizeRadians(theta -
-                    imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
+            theta = AngleUnit.normalizeRadians(theta - yawInRadProvider.getAsDouble());
 
             // Third, convert back to cartesian
             double newForward = r * Math.sin(theta);

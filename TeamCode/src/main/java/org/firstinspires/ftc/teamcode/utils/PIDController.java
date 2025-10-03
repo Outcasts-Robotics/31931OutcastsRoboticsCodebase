@@ -32,12 +32,24 @@ public class PIDController {
         this.kp = kp;
     }
 
+    public double getKp() {
+        return kp;
+    }
+
     public void setKi(double ki) {
         this.ki = ki;
     }
 
+    public double getKi() {
+        return ki;
+    }
+
     public void setKd(double kd) {
         this.kd = kd;
+    }
+
+    public double getKd() {
+        return kd;
     }
 
     /**
