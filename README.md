@@ -144,7 +144,7 @@ The readme.md file located in the [/TeamCode/src/main/java/org/firstinspires/ftc
 ## Version 10.2 (20250121-174034)
 
 ### Enhancements
-* Add ability to upload the pipeline for Li1melight3A which allows teams to version control their limelight pipelines.
+* Add ability to upload the pipeline for Limelight3A which allows teams to version control their limelight pipelines.
 
 
 ### Bug Fixes
