@@ -7,10 +7,10 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.utils.AutoAim;
-import org.firstinspires.ftc.teamcode.utils.MecanumDrive;
-import org.firstinspires.ftc.teamcode.utils.PIDController;
-import org.firstinspires.ftc.teamcode.vision.WebcamProcessor;
+import org.firstinspires.ftc.teamcode.components.AutoAim;
+import org.firstinspires.ftc.teamcode.components.MecanumDrive;
+import org.firstinspires.ftc.teamcode.helpers.PIDController;
+import org.firstinspires.ftc.teamcode.components.WebcamProcessor;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 import java.util.function.DoubleSupplier;

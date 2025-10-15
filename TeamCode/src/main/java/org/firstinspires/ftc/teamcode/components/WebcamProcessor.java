@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.vision;
+package org.firstinspires.ftc.teamcode.components;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
 
@@ -160,7 +160,7 @@ public class WebcamProcessor {
         if (freshDetections != null) {
             Optional<AprilTagDetection> minRangeTag = freshDetections.stream()
                     .filter(detection ->
-                            detectAllTags || Tags.isPositionTagId(detection.id))
+                            detectAllTags || AprilTag.isPositionTagId(detection.id))
                     .min((d1, d2) -> {
                         if (d1.id == d2.id) return 0;
                         if (d1.ftcPose == null && d2.ftcPose == null) return 0;
