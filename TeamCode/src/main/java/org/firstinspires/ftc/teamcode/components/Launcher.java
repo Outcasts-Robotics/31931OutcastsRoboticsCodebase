@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.components;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -23,10 +24,14 @@ public class Launcher {
     private long lastLaunchTime = 0;
     private final ElapsedTime runtime = new ElapsedTime();
 
-    public Launcher(DcMotorEx flywheel, Servo gate, Gamepad gamepad) {
-        this.flywheel = flywheel;
+    String flywheelName = "flywheelMotor";
+    String gateName = "gateServo";
+
+
+    public Launcher(HardwareMap hardwareMap, Gamepad gamepad) {
+        this.flywheel = hardwareMap.get( DcMotorEx.class, flywheelName);
         this.gamepad = gamepad;
-        this.gate = gate;
+        this.gate = hardwareMap.get(Servo.class, gateName);
         closeGate(); // Ensure gate starts closed
     }
 
@@ -84,15 +89,23 @@ public class Launcher {
         }
     }
 
-    private void setFlywheelRPM(double rpm) {
+    public void setFlywheelRPM(double rpm) {
         // Convert RPM to ticks per second
         double ticksPerSecond = (rpm * 28.0) / 60.0; // 28:1 motor with 1:1 gearing to flywheel
         flywheel.setVelocity(ticksPerSecond);
     }
 
-    private double getFlywheelRPM() {
+    public double getFlywheelRPM() {
         // Convert ticks per second to RPM
         return (flywheel.getVelocity() * 60.0) / 28.0; // 28:1 motor with 1:1 gearing
+    }
+
+    private void setFlywheelPower(double power){
+        flywheel.setPower(power);
+    }
+
+    private double getFLywheelPower(){
+        return flywheel.getPower();
     }
 
     private void waitForFlywheelRPM(double targetRPM, long timeoutMs) throws InterruptedException {
