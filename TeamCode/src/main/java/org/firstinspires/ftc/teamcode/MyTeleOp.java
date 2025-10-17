@@ -9,12 +9,13 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.components.Launcher;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.utils.AutoAim;
-import org.firstinspires.ftc.teamcode.utils.MecanumDrive;
-import org.firstinspires.ftc.teamcode.vision.WebcamProcessor;
+import org.firstinspires.ftc.teamcode.components.AutoAim;
+import org.firstinspires.ftc.teamcode.components.MecanumDrive;
+import org.firstinspires.ftc.teamcode.components.WebcamProcessor;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-import org.firstinspires.ftc.teamcode.subsystems.Flywheel;
+
 import java.util.function.DoubleSupplier;
 
 
@@ -26,20 +27,16 @@ public class MyTeleOp extends OpMode {
     private WebcamProcessor webcamProcessor;
     private AutoAim autoAim;
     private PinpointLocalizer pinpointLocalizer;
-    private Flywheel flywheel;
-
-
+    private Launcher launcher;
 
 
     @Override
     public void init() {
-
         telemetry.addData("Status", "Initializing");
-
 
         pinpointLocalizer = new PinpointLocalizer(hardwareMap, Constants.pinpointConstants);
         pinpointLocalizer.resetIMU();
-        flywheel = new Flywheel(hardwareMap);
+
         webcam1 = hardwareMap.get(WebcamName.class, "Webcam 1");
         webcamProcessor = new WebcamProcessor(webcam1, telemetry, Constants.webcamProcessorInputs);
         webcamProcessor.initialize();
@@ -96,8 +93,6 @@ public class MyTeleOp extends OpMode {
         }
 
         telemetry.addData("autoAim", autoAimEnabled);
-
-
     }
 
     @Override

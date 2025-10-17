@@ -1,6 +1,6 @@
-package org.firstinspires.ftc.teamcode.vision;
+package org.firstinspires.ftc.teamcode.components;
 
-public enum Tags {
+public enum AprilTag {
     BlueTarget(20, "BlueTarget"),
     RedTarget(24, "RedTarget"),
     Obelisk_GPP(21, "Obelisk_GPP"),
@@ -10,7 +10,7 @@ public enum Tags {
     final int id;
     final String name;
 
-    Tags(int id, String name) {
+    AprilTag(int id, String name) {
         this.id = id;
         this.name = name;
     }
