@@ -22,6 +22,8 @@ public class FlywheelGraph extends OpMode {
     // State
     private double targetRPM = 0;
     private boolean isFlywheelRunning = false;
+    private boolean rightTriggerPressed = false;
+    private boolean leftTriggerPressed = false;
 
     @Override
     public void init() {
@@ -55,6 +57,18 @@ public class FlywheelGraph extends OpMode {
         } else if (gamepad1.leftBumperWasPressed()) {
             targetRPM -= 100;
         }
+
+        boolean rightTrigger = gamepad1.right_trigger > 0.5;
+        if (rightTrigger && !rightTriggerPressed) {
+            targetRPM = (((int) (targetRPM / 500)) + 1) * 500;
+        }
+        rightTriggerPressed = rightTrigger;
+
+        boolean leftTrigger = gamepad1.left_trigger > 0.5;
+        if (leftTrigger && !leftTriggerPressed) {
+            targetRPM = ((int) ((targetRPM - 1) / 500)) * 500;
+        }
+        leftTriggerPressed = leftTrigger;
 
         // Prevent target RPM from going below zero
         if (targetRPM < 0) {
