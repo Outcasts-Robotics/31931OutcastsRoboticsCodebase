@@ -22,12 +22,12 @@ public class Launcher {
     private volatile boolean isLaunching = false;
     private long lastLaunchTime = 0;
     private final ElapsedTime runtime = new ElapsedTime();
+    private Thread workerThread;
 
     public Launcher(DcMotorEx flywheel, Servo gate, Gamepad gamepad) {
         this.flywheel = flywheel;
         this.gamepad = gamepad;
         this.gate = gate;
-        closeGate(); // Ensure gate starts closed
     }
 
     public void init() {
@@ -36,7 +36,10 @@ public class Launcher {
         flywheel.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
 
         // Start the launch loop in a separate thread
-        new Thread(this::internalLaunchLoop).start();
+        workerThread = new Thread(this::internalLaunchLoop);
+        workerThread.start();
+
+        closeGate(); // Ensure gate starts closed
     }
 
     private void internalLaunchLoop() {
@@ -108,11 +111,13 @@ public class Launcher {
     }
 
     private void openGate() {
-        gate.setPosition(GATE_OPEN_POSITION);
+        if (gate != null)
+            gate.setPosition(GATE_OPEN_POSITION);
     }
 
     private void closeGate() {
-        gate.setPosition(GATE_CLOSE_POSITION);
+        if (gate != null)
+            gate.setPosition(GATE_CLOSE_POSITION);
     }
 
     public void update() {
@@ -136,5 +141,6 @@ public class Launcher {
     public void stop() {
         flywheel.setPower(0);
         closeGate();
+        workerThread.interrupt();
     }
 }
