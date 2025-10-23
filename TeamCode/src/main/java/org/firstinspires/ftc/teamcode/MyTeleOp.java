@@ -5,14 +5,15 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.ftc.localization.localizers.PinpointLocalizer;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.components.Launcher;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.components.AutoAim;
+import org.firstinspires.ftc.teamcode.components.Launcher;
 import org.firstinspires.ftc.teamcode.components.MecanumDrive;
 import org.firstinspires.ftc.teamcode.components.WebcamProcessor;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 import java.util.function.DoubleSupplier;
@@ -47,6 +48,9 @@ public class MyTeleOp extends OpMode {
 
         DoubleSupplier yawInDegProvider = () -> radToDeg(pinpointLocalizer.getPose().getHeading());
         autoAim = new AutoAim(yawInDegProvider);
+
+        launcher = new Launcher(hardwareMap.get(DcMotorEx.class, "flywheel"), null, gamepad2);
+        launcher.init();
     }
 
     private double radToDeg(double radians) {
@@ -98,6 +102,7 @@ public class MyTeleOp extends OpMode {
 
     @Override
     public void stop() {
+        launcher.stop();
         telemetry.addData("Status", "Stopping");
     }
 }
