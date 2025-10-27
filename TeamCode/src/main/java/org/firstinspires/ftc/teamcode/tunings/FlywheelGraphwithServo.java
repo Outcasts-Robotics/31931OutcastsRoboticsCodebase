@@ -7,9 +7,11 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
-@TeleOp
-public class FlywheelGraph extends OpMode {
+@TeleOp(name = "servo+test")
+public class FlywheelGraphwithServo extends OpMode {
     // Constants
     private static final double SECS_PER_MIN = 60.0;
     private static final double TICKS_PER_REV = 28.0;
@@ -25,6 +27,17 @@ public class FlywheelGraph extends OpMode {
     private boolean isFlywheelRunning = false;
     private boolean rightTriggerPressed = false;
     private boolean leftTriggerPressed = false;
+    public Servo gateServo;
+    double closedPosition = .5;
+    double openPosition = -.5;
+
+    ElapsedTime timer = new ElapsedTime();
+
+    gateStates currState = gateStates.OPEN;
+    public enum gateStates{
+        OPEN,
+        CLOSED
+    }
 
     @Override
     public void init() {
@@ -32,6 +45,8 @@ public class FlywheelGraph extends OpMode {
         flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
         flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        gateServo = hardwareMap.get(Servo.class, "gateServo");
+
     }
 
     @Override
@@ -81,6 +96,20 @@ public class FlywheelGraph extends OpMode {
         if (gamepad1.xWasPressed()) {
             isFlywheelRunning = !isFlywheelRunning;
         }
+
+        if(gamepad1.circle) {
+            if (timer.milliseconds() > 1000) {
+                timer.reset();
+                if (currState == gateStates.CLOSED) {
+                    gateServo.setPosition(openPosition);
+                    currState = gateStates.OPEN;
+                } else {
+                    gateServo.setPosition(closedPosition);
+                    currState = gateStates.CLOSED;
+                }
+            }
+        }
+
     }
 
     /**
@@ -100,6 +129,7 @@ public class FlywheelGraph extends OpMode {
         panelsTelemetry.addData("rpm_actual", flywheelRPM);
         panelsTelemetry.addData("power", flywheel.getPower());
         panelsTelemetry.addData("running", isFlywheelRunning);
+        panelsTelemetry.addData("Gate State", currState);
         panelsTelemetry.update(telemetry);
     }
 }

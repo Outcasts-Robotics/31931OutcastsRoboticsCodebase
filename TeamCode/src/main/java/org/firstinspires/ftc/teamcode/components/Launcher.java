@@ -24,7 +24,7 @@ public class Launcher {
     private long lastLaunchTime = 0;
     private final ElapsedTime runtime = new ElapsedTime();
 
-    String flywheelName = "flywheelMotor";
+    String flywheelName = "flywheel";
     String gateName = "gateServo";
 
 
