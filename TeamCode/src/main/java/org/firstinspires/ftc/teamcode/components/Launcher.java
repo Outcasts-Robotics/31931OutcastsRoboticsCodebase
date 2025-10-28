@@ -1,43 +1,55 @@
 package org.firstinspires.ftc.teamcode.components;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class Launcher {
+    private static final double IDLE_RPM = 0;
+    private static final long IDLE_DELAY_MS = 2000; // Delay before switching to idle speed after last launch
+    private static final double RPM_TOLERANCE = 80; // RPM tolerance for considering target speed reached
+    private static final double GATE_OPEN_POSITION = 0.2; // Adjust based on your servo's range
+    private static final double GATE_CLOSE_POSITION = 0.4; // Adjust based on your servo's range
     private final DcMotorEx flywheel;
     private final Gamepad gamepad;
     private final Servo gate;
-
-    private static final double IDLE_RPM = 500;
-    private static final long IDLE_DELAY_MS = 1000; // Delay before switching to idle speed after last launch
-    private static final double TARGET_RPM = 3000;
-    private static final double RPM_TOLERANCE = 50; // RPM tolerance for considering target speed reached
-    private static final double GATE_OPEN_POSITION = 1.0; // Adjust based on your servo's range
-    private static final double GATE_CLOSE_POSITION = 0.0; // Adjust based on your servo's range
-    private static final int GATE_OPERATION_DELAY_MS = 50; // Time to keep gate open in milliseconds
-
+    private volatile double targetRpm = 3000;
+    private int gateOperationDelayMs = 330; // Time to keep gate open in milliseconds
     private volatile int launchCount = 0;
     private volatile boolean isLaunching = false;
     private long lastLaunchTime = 0;
-    private final ElapsedTime runtime = new ElapsedTime();
     private Thread workerThread;
-
     public Launcher(DcMotorEx flywheel, Servo gate, Gamepad gamepad) {
         this.flywheel = flywheel;
         this.gamepad = gamepad;
         this.gate = gate;
     }
 
+    public void setTargetRpm(double targetRpm) {
+        this.targetRpm = targetRpm;
+    }
+
+    public int getGateOperationDelayMs() {
+        return gateOperationDelayMs;
+    }
+
+    public void setGateOperationDelayMs(int gateOperationDelayMs) {
+        this.gateOperationDelayMs = gateOperationDelayMs;
+    }
+
     public void init() {
         // Configure flywheel motor
         flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         flywheel.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+        flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // Start the launch loop in a separate thread
         workerThread = new Thread(this::internalLaunchLoop);
         workerThread.start();
+
+        gate.setDirection(Servo.Direction.REVERSE);
 
         closeGate(); // Ensure gate starts closed
     }
@@ -50,13 +62,13 @@ public class Launcher {
                     lastLaunchTime = System.currentTimeMillis();
 
                     try {
-                        setFlywheelRPM(TARGET_RPM);
+                        setFlywheelRPM(targetRpm);
 
-                        waitForFlywheelRPM(TARGET_RPM, 2000); // 2 second timeout
+                        waitForFlywheelRPM(targetRpm, 2000); // 2 second timeout
 
                         openGate();
 
-                        Thread.sleep(GATE_OPERATION_DELAY_MS);
+                        Thread.sleep(gateOperationDelayMs);
 
                         closeGate();
 
@@ -87,15 +99,15 @@ public class Launcher {
         }
     }
 
+    private double getFlywheelRPM() {
+        // Convert ticks per second to RPM
+        return (flywheel.getVelocity() * 60.0) / 28.0; // 28:1 motor with 1:1 gearing
+    }
+
     private void setFlywheelRPM(double rpm) {
         // Convert RPM to ticks per second
         double ticksPerSecond = (rpm * 28.0) / 60.0; // 28:1 motor with 1:1 gearing to flywheel
         flywheel.setVelocity(ticksPerSecond);
-    }
-
-    private double getFlywheelRPM() {
-        // Convert ticks per second to RPM
-        return (flywheel.getVelocity() * 60.0) / 28.0; // 28:1 motor with 1:1 gearing
     }
 
     private void waitForFlywheelRPM(double targetRPM, long timeoutMs) throws InterruptedException {
@@ -111,13 +123,11 @@ public class Launcher {
     }
 
     private void openGate() {
-        if (gate != null)
-            gate.setPosition(GATE_OPEN_POSITION);
+        gate.setPosition(GATE_OPEN_POSITION);
     }
 
     private void closeGate() {
-        if (gate != null)
-            gate.setPosition(GATE_CLOSE_POSITION);
+        gate.setPosition(GATE_CLOSE_POSITION);
     }
 
     public void update() {
@@ -138,7 +148,7 @@ public class Launcher {
         return isLaunching;
     }
 
-    public void stop() {
+    public void onStop() {
         flywheel.setPower(0);
         closeGate();
         workerThread.interrupt();
