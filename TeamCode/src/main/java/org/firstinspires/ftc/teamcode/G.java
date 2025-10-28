@@ -51,4 +51,8 @@ public abstract class G {
             pois = _bluePOIs;
         }
     }
+
+    static {
+        initGlobals(Alliance.BLUE);
+    }
 }
