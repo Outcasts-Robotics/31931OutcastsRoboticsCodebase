@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.components;
 
+import android.util.Size;
+
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -71,7 +73,7 @@ public class WebcamProcessor {
     public void initialize() {
         aprilTagProcessor = new AprilTagProcessor.Builder().setCameraPose(cameraPosition, cameraOrientation)
                 .build();
-        visionPortal = new VisionPortal.Builder().setCamera(webcam).addProcessor(aprilTagProcessor).build();
+        visionPortal = new VisionPortal.Builder().setCamera(webcam).addProcessor(aprilTagProcessor).setCameraResolution(new Size(800,600)).setStreamFormat(VisionPortal.StreamFormat.MJPEG).build();
 
         if (visionPortal.getCameraState() != VisionPortal.CameraState.STREAMING) {
             telemetry.addData("Camera", "Waiting for camera to stream");

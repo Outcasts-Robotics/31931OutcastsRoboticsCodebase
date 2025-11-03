@@ -28,8 +28,8 @@ public class FlywheelGraphwithServo extends OpMode {
     private boolean rightTriggerPressed = false;
     private boolean leftTriggerPressed = false;
     public Servo gateServo;
-    double closedPosition = .5;
-    double openPosition = -.5;
+    double closedPosition = .4;
+    double openPosition =  .2;
 
     ElapsedTime timer = new ElapsedTime();
 
@@ -46,6 +46,8 @@ public class FlywheelGraphwithServo extends OpMode {
         flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         gateServo = hardwareMap.get(Servo.class, "gateServo");
+        gateServo.setDirection(Servo.Direction.REVERSE);
+        gateServo.setPosition(openPosition);
 
     }
 
@@ -97,8 +99,11 @@ public class FlywheelGraphwithServo extends OpMode {
             isFlywheelRunning = !isFlywheelRunning;
         }
 
+
+
+
         if(gamepad1.circle) {
-            if (timer.milliseconds() > 1000) {
+            if (timer.milliseconds() > 500) {
                 timer.reset();
                 if (currState == gateStates.CLOSED) {
                     gateServo.setPosition(openPosition);
@@ -130,6 +135,8 @@ public class FlywheelGraphwithServo extends OpMode {
         panelsTelemetry.addData("power", flywheel.getPower());
         panelsTelemetry.addData("running", isFlywheelRunning);
         panelsTelemetry.addData("Gate State", currState);
+        panelsTelemetry.addData("Servo Position", gateServo.getController().getServoPosition(gateServo.getPortNumber()));
         panelsTelemetry.update(telemetry);
+
     }
 }

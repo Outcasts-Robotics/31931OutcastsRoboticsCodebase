@@ -18,20 +18,20 @@ import org.firstinspires.ftc.teamcode.components.WebcamProcessor;
 
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .mass(6) // tuning - mass in kg
+            .mass(7.25) // tuning - mass in kg
             .forwardZeroPowerAcceleration(-34.62719) // tuning - forward deceleration
             .lateralZeroPowerAcceleration(-78.15554) // tuning - lateral deceleration
             ;
     public static MecanumConstants mecanumConstants = new MecanumConstants()
             .maxPower(0.8)
-            .leftFrontMotorName("lf")
-            .rightFrontMotorName("rf")
-            .leftRearMotorName("lr")
+            .leftFrontMotorName("fl")
+            .rightFrontMotorName("fr")
+            .leftRearMotorName("rl")
             .rightRearMotorName("rr")
             .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
             .xVelocity(81) // tuning - forward max velocity
             .yVelocity(65) // tuning - sideway max velocity
             ;
@@ -39,8 +39,12 @@ public class Constants {
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
     public static PinpointConstants pinpointConstants = new PinpointConstants()
             .hardwareMapName("pinpoint")
-            .forwardPodY(-2)
-            .strafePodX(-5)
+            .forwardPodY(2)
+            .strafePodX(0)
+            .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED)
+            .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
+            .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
+            .distanceUnit(DistanceUnit.INCH)
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED)
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
 
