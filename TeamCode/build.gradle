@@ -32,3 +32,8 @@ dependencies {
     implementation project(':FtcRobotController')
     implementation 'com.bylazar:fullpanels:1.0.7'
 }
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}

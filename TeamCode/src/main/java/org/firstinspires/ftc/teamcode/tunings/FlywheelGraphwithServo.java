@@ -7,9 +7,11 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
-@TeleOp
-public class FlywheelGraph extends OpMode {
+@TeleOp(name = "servo+test")
+public class FlywheelGraphwithServo extends OpMode {
     // Constants
     private static final double SECS_PER_MIN = 60.0;
     private static final double TICKS_PER_REV = 28.0;
@@ -25,22 +27,28 @@ public class FlywheelGraph extends OpMode {
     private boolean isFlywheelRunning = false;
     private boolean rightTriggerPressed = false;
     private boolean leftTriggerPressed = false;
+    public Servo gateServo;
+    double closedPosition = .4;
+    double openPosition =  .2;
 
-    // PID tuning state
-    private PIDFCoefficients pidfCoefficients;
-    private enum PIDCoefficient { P, I, D }
-    private PIDCoefficient selectedCoefficient = PIDCoefficient.P;
+    ElapsedTime timer = new ElapsedTime();
+
+    gateStates currState = gateStates.OPEN;
+    public enum gateStates{
+        OPEN,
+        CLOSED
+    }
 
     @Override
     public void init() {
         flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
         flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
         flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-        flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
         flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        gateServo = hardwareMap.get(Servo.class, "gateServo");
+        gateServo.setDirection(Servo.Direction.REVERSE);
+        gateServo.setPosition(openPosition);
 
-        // Get the current PIDF coefficients
-        pidfCoefficients = flywheel.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     @Override
@@ -48,12 +56,6 @@ public class FlywheelGraph extends OpMode {
         // Allow tuning of target RPM before starting the opmode
         handleGamepadInput();
         telemetry.addData("Target RPM", targetRPM);
-
-        // Display PID coefficients in init_loop as well
-        telemetry.addData("Tuning", selectedCoefficient.name());
-        telemetry.addData("P", pidfCoefficients.p);
-        telemetry.addData("I", pidfCoefficients.i);
-        telemetry.addData("D", pidfCoefficients.d);
         telemetry.update();
     }
 
@@ -68,7 +70,7 @@ public class FlywheelGraph extends OpMode {
      * Handles gamepad inputs for controlling the flywheel.
      */
     private void handleGamepadInput() {
-        // Gamepad 1 controls
+        // Adjust target RPM
         if (gamepad1.rightBumperWasPressed()) {
             targetRPM += 100;
         } else if (gamepad1.leftBumperWasPressed()) {
@@ -87,56 +89,32 @@ public class FlywheelGraph extends OpMode {
         }
         leftTriggerPressed = leftTrigger;
 
+        // Prevent target RPM from going below zero
         if (targetRPM < 0) {
             targetRPM = 0;
         }
 
+        // Toggle flywheel state
         if (gamepad1.xWasPressed()) {
             isFlywheelRunning = !isFlywheelRunning;
         }
 
-        // Gamepad 2 for PID tuning
-        if (gamepad2.yWasPressed()) {
-            selectedCoefficient = PIDCoefficient.P;
-        }
 
-        if (gamepad2.bWasPressed()) {
-            selectedCoefficient = PIDCoefficient.I;
-        }
 
-        if (gamepad2.aWasPressed()) {
-            selectedCoefficient = PIDCoefficient.D;
-        }
 
-        double p_step = 0.5;
-        double i_step = 0.05;
-        double d_step = 0.005;
-
-        boolean pidChanged = false;
-        if (gamepad2.dpadUpWasPressed()) {
-            switch (selectedCoefficient) {
-                case P: pidfCoefficients.p += p_step; break;
-                case I: pidfCoefficients.i += i_step; break;
-                case D: pidfCoefficients.d += d_step; break;
+        if(gamepad1.circle) {
+            if (timer.milliseconds() > 500) {
+                timer.reset();
+                if (currState == gateStates.CLOSED) {
+                    gateServo.setPosition(openPosition);
+                    currState = gateStates.OPEN;
+                } else {
+                    gateServo.setPosition(closedPosition);
+                    currState = gateStates.CLOSED;
+                }
             }
-            pidChanged = true;
         }
 
-        if (gamepad2.dpadDownWasPressed()) {
-            switch (selectedCoefficient) {
-                case P: pidfCoefficients.p -= p_step; break;
-                case I: pidfCoefficients.i -= i_step; break;
-                case D: pidfCoefficients.d -= d_step; break;
-            }
-            pidChanged = true;
-        }
-
-        if (pidChanged) {
-            pidfCoefficients.p = Math.max(0, pidfCoefficients.p);
-            pidfCoefficients.i = Math.max(0, pidfCoefficients.i);
-            pidfCoefficients.d = Math.max(0, pidfCoefficients.d);
-            flywheel.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
-        }
     }
 
     /**
@@ -156,13 +134,9 @@ public class FlywheelGraph extends OpMode {
         panelsTelemetry.addData("rpm_actual", flywheelRPM);
         panelsTelemetry.addData("power", flywheel.getPower());
         panelsTelemetry.addData("running", isFlywheelRunning);
-
-        // PID Telemetry
-        panelsTelemetry.addData("Tuning", selectedCoefficient.name());
-        panelsTelemetry.addData("P", pidfCoefficients.p);
-        panelsTelemetry.addData("I", pidfCoefficients.i);
-        panelsTelemetry.addData("D", pidfCoefficients.d);
-
+        panelsTelemetry.addData("Gate State", currState);
+        panelsTelemetry.addData("Servo Position", gateServo.getController().getServoPosition(gateServo.getPortNumber()));
         panelsTelemetry.update(telemetry);
+
     }
 }

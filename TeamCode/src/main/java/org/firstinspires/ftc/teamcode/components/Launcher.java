@@ -23,26 +23,15 @@ public class Launcher {
     private long lastLaunchTime = 0;
     private Thread workerThread;
 
+    String flywheelName = "flywheel";
+    String gateName = "gateServo";
+
+
     public Launcher(HardwareMap hardwareMap, Gamepad gamepad) {
-        this.flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
+        this.flywheel = hardwareMap.get( DcMotorEx.class, flywheelName);
         this.gamepad = gamepad;
-        this.gate = hardwareMap.get(Servo.class, "gateServo");
-    }
-
-    public double getTargetRpm() {
-        return targetRpm;
-    }
-
-    public void setTargetRpm(double targetRpm) {
-        this.targetRpm = targetRpm;
-    }
-
-    public int getGateOperationDelayMs() {
-        return gateOperationDelayMs;
-    }
-
-    public void setGateOperationDelayMs(int gateOperationDelayMs) {
-        this.gateOperationDelayMs = gateOperationDelayMs;
+        this.gate = hardwareMap.get(Servo.class, gateName);
+        closeGate(); // Ensure gate starts closed
     }
 
     public void init() {
@@ -105,15 +94,23 @@ public class Launcher {
         }
     }
 
-    private double getFlywheelRPM() {
+    public void setFlywheelRPM(double rpm) {
+        // Convert RPM to ticks per second
+        double ticksPerSecond = (rpm * 28.0) / 60.0; // 28:1 motor with 1:1 gearing to flywheel
+        flywheel.setVelocity(ticksPerSecond);
+    }
+
+    public double getFlywheelRPM() {
         // Convert ticks per second to RPM
         return (flywheel.getVelocity() * 60.0) / 28.0; // 28:1 motor with 1:1 gearing
     }
 
-    private void setFlywheelRPM(double rpm) {
-        // Convert RPM to ticks per second
-        double ticksPerSecond = (rpm * 28.0) / 60.0; // 28:1 motor with 1:1 gearing to flywheel
-        flywheel.setVelocity(ticksPerSecond);
+    private void setFlywheelPower(double power){
+        flywheel.setPower(power);
+    }
+
+    private double getFLywheelPower(){
+        return flywheel.getPower();
     }
 
     private void waitForFlywheelRPM(double targetRPM, long timeoutMs) throws InterruptedException {
