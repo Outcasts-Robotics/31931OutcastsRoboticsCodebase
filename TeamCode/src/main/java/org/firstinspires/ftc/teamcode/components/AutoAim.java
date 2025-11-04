@@ -1,64 +1,76 @@
 package org.firstinspires.ftc.teamcode.components;
 
+import com.pedropathing.ftc.FTCCoordinates;
+import com.pedropathing.geometry.FuturePose;
+import com.pedropathing.geometry.PedroCoordinates;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.teamcode.Utils;
 import org.firstinspires.ftc.teamcode.helpers.PIDController;
-import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
-
-import java.util.function.DoubleSupplier;
 
 public class AutoAim {
 
-    public static final double TARGET_STALE_TIMEOUT_SEC = 5.0;
-    private final PIDController yawPidController;
-    private final DoubleSupplier yawInDegProvider;
+    private final PIDController headingPidController;
+    private final FuturePose futurePose;
 
-    private double lastTargetRobotYaw;
-    private final ElapsedTime timer;
-    private double yawPid;
+    private final Telemetry telemetry;
+    private double headingPid;
+    private boolean active;
+    private Pose2D target;
 
-    public AutoAim(DoubleSupplier yawInDegProvider) {
-        this.yawInDegProvider = yawInDegProvider;
-        this.yawPidController = new PIDController(0.01, 0.0, 0.0, new ElapsedTime());
-        this.timer = new ElapsedTime();
+    public AutoAim(FuturePose futurePose, Telemetry telemetry) {
+        this.futurePose = futurePose;
+        this.headingPidController = new PIDController(9, 0.1, 0.6, new ElapsedTime());
+        this.telemetry = telemetry;
     }
 
-    public void loopUpdate(AprilTagPoseFtc aprilTagPoseFtc) {
-        double robotYaw = yawInDegProvider.getAsDouble();
+    public void update() {
+        telemetry.addData("autoaim", isActive());
+        Pose pose = futurePose.getPose();
 
-        if (aprilTagPoseFtc != null) {
-            double tagYaw = aprilTagPoseFtc.yaw;
-            lastTargetRobotYaw = normalize(robotYaw + tagYaw);
-            timer.reset();
+        telemetry.addData("robotPose", String.format("x=%.1f y=%.1f h=%.1f", pose.getX(), pose.getY(),
+                AngleUnit.DEGREES.fromRadians(pose.getHeading())));
+
+        Pose targetPoseFtc = new Pose(target.getX(DistanceUnit.INCH), target.getY(DistanceUnit.INCH), 0, FTCCoordinates.INSTANCE);
+        Pose targetPose = Utils.toPedro(targetPoseFtc);
+        telemetry.addData("aimAtPose", String.format("x=%.1f y=%.1f", targetPose.getX(), targetPose.getY()));
+
+        Pose robotToTarget = targetPose.minus(pose);
+        double targetHeading = Math.atan2(robotToTarget.getY(), robotToTarget.getX());
+        telemetry.addData("targetHeading", AngleUnit.DEGREES.fromRadians(targetHeading));
+        double headingError = AngleUnit.normalizeRadians(targetHeading - pose.getHeading());
+        if (!isActive()) {
+            return;
         }
+        headingPid = headingPidController.calculate(headingError, 0);
+        telemetry.addData("headingPid", headingPid);
+    }
 
-        if (timer.seconds() < TARGET_STALE_TIMEOUT_SEC) {
-            yawPid = yawPidController.calculate(yawDiff(robotYaw, lastTargetRobotYaw), 0);
-        } else {
-            yawPidController.reset();
-            yawPid = 0;  // no change
+    public PIDController getHeadingPidController() {
+        return headingPidController;
+    }
+
+    public double getHeadingPid() {
+        if (!isActive()) {
+            return 0;
         }
+        return headingPid;
     }
 
-    public PIDController getYawPidController() {
-        return yawPidController;
+    public boolean isActive() {
+        return active;
     }
 
-    private double yawDiff(double fromYaw, double toYaw) {
-        return normalize(toYaw - fromYaw);
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
-    private double normalize(double v) {
-        if (v > 180) {
-            return v - 360;
-        } else if (v < -180) {
-            return v + 360;
-        } else {
-            return v;
-        }
-    }
-
-    public double getYawPid() {
-        return yawPid;
+    public void setTarget(Pose2D target) {
+        this.target = target;
     }
 }

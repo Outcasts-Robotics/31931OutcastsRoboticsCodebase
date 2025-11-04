@@ -1,18 +1,19 @@
 package org.firstinspires.ftc.teamcode;
 
 
-import com.pedropathing.follower.Follower;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.ftc.localization.localizers.PinpointLocalizer;
+import com.pedropathing.geometry.FuturePose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.components.Launcher;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.components.AutoAim;
+import org.firstinspires.ftc.teamcode.components.Launcher;
 import org.firstinspires.ftc.teamcode.components.MecanumDrive;
 import org.firstinspires.ftc.teamcode.components.WebcamProcessor;
+import org.firstinspires.ftc.teamcode.helpers.LoopTimer;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 import java.util.function.DoubleSupplier;
@@ -20,84 +21,95 @@ import java.util.function.DoubleSupplier;
 
 @TeleOp(name = "MyTeleOp", group = "TeleOp")
 public class MyTeleOp extends OpMode {
-    private Follower follower;
+    private final TelemetryManager panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
+
     private MecanumDrive mecanumDrive;
-    private WebcamName webcam1;
     private WebcamProcessor webcamProcessor;
     private AutoAim autoAim;
     private PinpointLocalizer pinpointLocalizer;
     private Launcher launcher;
+    private LoopTimer loopTimer;
 
 
     @Override
     public void init() {
         telemetry.addData("Status", "Initializing");
 
+        loopTimer = new LoopTimer(panelsTelemetry, 10);
+
         pinpointLocalizer = new PinpointLocalizer(hardwareMap, Constants.pinpointConstants);
         pinpointLocalizer.resetIMU();
 
-        webcam1 = hardwareMap.get(WebcamName.class, "Webcam 1");
-        webcamProcessor = new WebcamProcessor(webcam1, telemetry, Constants.webcamProcessorInputs);
+        webcamProcessor = new WebcamProcessor(hardwareMap, telemetry, Constants.webcamProcessorInputs);
         webcamProcessor.initialize();
 
-        DoubleSupplier yawInRadProvider = () -> pinpointLocalizer.getPose().getHeading();
-        mecanumDrive = new MecanumDrive(hardwareMap, Constants.mecanumConstants, telemetry, 1.0, yawInRadProvider);
+        DoubleSupplier pinpointHeading = () -> pinpointLocalizer.getPose().getHeading();
+        mecanumDrive = new MecanumDrive(hardwareMap, Constants.mecanumConstants, telemetry, 1.0, pinpointHeading);
 
 //        follower = Constants.createFollower(hardwareMap);
 
-        DoubleSupplier yawInDegProvider = () -> radToDeg(pinpointLocalizer.getPose().getHeading());
-        autoAim = new AutoAim(yawInDegProvider);
-    }
+        FuturePose futurePose = () -> pinpointLocalizer.getPose();
+        autoAim = new AutoAim(futurePose, telemetry);
+        autoAim.setTarget(G.pois.goal);
 
-    private double radToDeg(double radians) {
-        return AngleUnit.DEGREES.fromRadians(radians);
+        launcher = new Launcher(hardwareMap, gamepad1);
+        launcher.init();
     }
 
     @Override
     public void init_loop() {
-        if (webcamProcessor != null) webcamProcessor.initLoopUpdate(gamepad1);
+        webcamProcessor.initLoopUpdate(gamepad1);
+        if (gamepad1.leftBumperWasPressed() || gamepad1.rightBumperWasPressed()) {
+            G.initGlobals(G.alliance == Alliance.RED ? Alliance.BLUE : Alliance.RED);
+        }
+        telemetry.addData("Alliance", G.alliance);
+        autoAim.setTarget(G.pois.goal);
     }
 
     @Override
     public void start() {
         telemetry.addData("Status", "Starting");
+        loopTimer.reset();
     }
 
     @Override
     public void loop() {
-        if (webcamProcessor != null) webcamProcessor.loopUpdate();
+        loopTimer.update();
 
-        pinpointLocalizer.update(); // update pose
-
-        boolean autoAimEnabled = false;
-        if (gamepad1.left_trigger > 0.2 && webcamProcessor != null) {
-            autoAimEnabled = true;
-            AprilTagDetection detection = webcamProcessor.getLastDetection();
-            autoAim.loopUpdate(detection == null ? null : detection.ftcPose);
-            double yawPid = autoAim.getYawPid();
-            telemetry.addData("yawPid", yawPid);
-            mecanumDrive.loopUpdate(gamepad1, yawPid);
-        } else {
-            // manual drive
-            if (follower != null) {  // with pedro pathing
-                float speedScale = 0.2f + (1 - gamepad1.right_trigger) * 0.8f;
-                follower.setTeleOpDrive(
-                        -gamepad1.left_stick_y * speedScale,
-                        gamepad1.left_stick_x * speedScale,
-                        gamepad1.right_stick_x * speedScale,
-                        gamepad1.left_bumper);
-            } else if (mecanumDrive != null) {  // with manual driving
-                mecanumDrive.loopUpdate(gamepad1, 0);
-            }
-        }
+        webcamProcessor.update();
+        AprilTagDetection tag = webcamProcessor.getDetection();
 
         launcher.update();
 
-        telemetry.addData("autoAim", autoAimEnabled);
+        if (tag != null) {
+            pinpointLocalizer.setPose(Utils.toPedro(tag.robotPose));
+        }
+        pinpointLocalizer.update();
+        telemetry.addData("pinpoint", pinpointLocalizer.getPose());
+
+        if (!autoAim.isActive() && gamepad1.left_trigger > 0.2) {
+            autoAim.setActive(true);
+        } else if (autoAim.isActive() && gamepad1.left_trigger < 0.2) {
+            autoAim.setActive(false);
+        }
+
+        if (autoAim.isActive() && gamepad1.left_trigger > 0.2) {
+            autoAim.update();
+            mecanumDrive.update(gamepad1, autoAim.getHeadingPid());
+        } else {
+            mecanumDrive.update(gamepad1, 0);
+        }
+
+        if (gamepad1.rightBumperWasPressed()) {
+            pinpointLocalizer.resetIMU();
+        }
+
+        panelsTelemetry.update(telemetry);
     }
 
     @Override
     public void stop() {
+        launcher.onStop();
         telemetry.addData("Status", "Stopping");
     }
 }

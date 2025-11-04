@@ -58,11 +58,11 @@ public class Constants {
 
     public static WebcamProcessor.Inputs webcamProcessorInputs = new WebcamProcessor.Inputs() {
         {
-            cameraPosition = new Position(DistanceUnit.INCH, 3, 3, 3, 0);
-            cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0, -5, 0, 0);
-            detectionMaxAgeMs = 300;
-            telemetryDetails = true;
-            detectAllTags = true;
+            webcamName = "Webcam 1";
+            cameraPosition = new Position(DistanceUnit.INCH, 0, 7, 10, 0);
+            cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0, 5, 0, 0);
+            telemetryDetails = false;
+            detectAllTags = false;
         }
     };
 }

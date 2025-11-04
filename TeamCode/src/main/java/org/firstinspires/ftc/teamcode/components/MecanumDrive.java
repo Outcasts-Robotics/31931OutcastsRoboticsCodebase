@@ -49,7 +49,7 @@ public class MecanumDrive {
         staticFrictionPower = 0.1;
     }
 
-    public void loopUpdate(Gamepad gamepad, double yawPid) {
+    public void update(Gamepad gamepad, double yawPid) {
         double speedScale = 0.3 + (1 - gamepad.right_trigger) * 0.7; // slow down to 30%
 
         boolean relativeToBot = yawInRadProvider == null || gamepad.left_bumper;
@@ -57,11 +57,11 @@ public class MecanumDrive {
         // pid deadzone
         if (Math.abs(yawPid) < 0.06) {
             yawPid = 0;
-        }
-
-        yawPid = clamp(yawPid, -0.3, 0.3); // max rotation speed is clamped to avoid over spinning
-        if (Math.abs(yawPid) < staticFrictionPower) {
-            yawPid = staticFrictionPower * Math.signum(yawPid);
+        } else {
+            yawPid = clamp(yawPid, -0.3, 0.3); // max rotation speed is clamped to avoid over spinning
+            if (Math.abs(yawPid) < staticFrictionPower) {
+                yawPid = staticFrictionPower * Math.signum(yawPid);
+            }
         }
 
         setDrive(-gamepad.left_stick_y * speedScale,

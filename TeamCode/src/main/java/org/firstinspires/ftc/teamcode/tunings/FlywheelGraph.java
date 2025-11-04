@@ -26,12 +26,21 @@ public class FlywheelGraph extends OpMode {
     private boolean rightTriggerPressed = false;
     private boolean leftTriggerPressed = false;
 
+    // PID tuning state
+    private PIDFCoefficients pidfCoefficients;
+    private enum PIDCoefficient { P, I, D }
+    private PIDCoefficient selectedCoefficient = PIDCoefficient.P;
+
     @Override
     public void init() {
         flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
         flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
         flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
         flywheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+        // Get the current PIDF coefficients
+        pidfCoefficients = flywheel.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     @Override
@@ -39,6 +48,12 @@ public class FlywheelGraph extends OpMode {
         // Allow tuning of target RPM before starting the opmode
         handleGamepadInput();
         telemetry.addData("Target RPM", targetRPM);
+
+        // Display PID coefficients in init_loop as well
+        telemetry.addData("Tuning", selectedCoefficient.name());
+        telemetry.addData("P", pidfCoefficients.p);
+        telemetry.addData("I", pidfCoefficients.i);
+        telemetry.addData("D", pidfCoefficients.d);
         telemetry.update();
     }
 
@@ -53,7 +68,7 @@ public class FlywheelGraph extends OpMode {
      * Handles gamepad inputs for controlling the flywheel.
      */
     private void handleGamepadInput() {
-        // Adjust target RPM
+        // Gamepad 1 controls
         if (gamepad1.rightBumperWasPressed()) {
             targetRPM += 100;
         } else if (gamepad1.leftBumperWasPressed()) {
@@ -72,14 +87,55 @@ public class FlywheelGraph extends OpMode {
         }
         leftTriggerPressed = leftTrigger;
 
-        // Prevent target RPM from going below zero
         if (targetRPM < 0) {
             targetRPM = 0;
         }
 
-        // Toggle flywheel state
         if (gamepad1.xWasPressed()) {
             isFlywheelRunning = !isFlywheelRunning;
+        }
+
+        // Gamepad 2 for PID tuning
+        if (gamepad2.yWasPressed()) {
+            selectedCoefficient = PIDCoefficient.P;
+        }
+
+        if (gamepad2.bWasPressed()) {
+            selectedCoefficient = PIDCoefficient.I;
+        }
+
+        if (gamepad2.aWasPressed()) {
+            selectedCoefficient = PIDCoefficient.D;
+        }
+
+        double p_step = 0.5;
+        double i_step = 0.05;
+        double d_step = 0.005;
+
+        boolean pidChanged = false;
+        if (gamepad2.dpadUpWasPressed()) {
+            switch (selectedCoefficient) {
+                case P: pidfCoefficients.p += p_step; break;
+                case I: pidfCoefficients.i += i_step; break;
+                case D: pidfCoefficients.d += d_step; break;
+            }
+            pidChanged = true;
+        }
+
+        if (gamepad2.dpadDownWasPressed()) {
+            switch (selectedCoefficient) {
+                case P: pidfCoefficients.p -= p_step; break;
+                case I: pidfCoefficients.i -= i_step; break;
+                case D: pidfCoefficients.d -= d_step; break;
+            }
+            pidChanged = true;
+        }
+
+        if (pidChanged) {
+            pidfCoefficients.p = Math.max(0, pidfCoefficients.p);
+            pidfCoefficients.i = Math.max(0, pidfCoefficients.i);
+            pidfCoefficients.d = Math.max(0, pidfCoefficients.d);
+            flywheel.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfCoefficients);
         }
     }
 
@@ -100,6 +156,13 @@ public class FlywheelGraph extends OpMode {
         panelsTelemetry.addData("rpm_actual", flywheelRPM);
         panelsTelemetry.addData("power", flywheel.getPower());
         panelsTelemetry.addData("running", isFlywheelRunning);
+
+        // PID Telemetry
+        panelsTelemetry.addData("Tuning", selectedCoefficient.name());
+        panelsTelemetry.addData("P", pidfCoefficients.p);
+        panelsTelemetry.addData("I", pidfCoefficients.i);
+        panelsTelemetry.addData("D", pidfCoefficients.d);
+
         panelsTelemetry.update(telemetry);
     }
 }

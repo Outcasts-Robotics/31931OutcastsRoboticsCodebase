@@ -20,7 +20,7 @@ public abstract class G {
     static {
         // Initialize red alliance POIs with default values (you may want to adjust these)
         _redPOIs = new POIs(
-            new Pose2D(DistanceUnit.CM, -182.875, 182.875, AngleUnit.DEGREES, 0), // goal
+            new Pose2D(DistanceUnit.INCH, -72, 72, AngleUnit.DEGREES, 0), // goal
             null, // obelisk
             null, // gate
             null, // baseZone
@@ -32,7 +32,7 @@ public abstract class G {
         
         // Initialize blue alliance POIs with default values (you may want to adjust these)
         _bluePOIs = new POIs(
-            new Pose2D(DistanceUnit.CM, -182.875, -182.875, AngleUnit.DEGREES, 0), // goal
+            new Pose2D(DistanceUnit.INCH, -72, -72, AngleUnit.DEGREES, 0), // goal
             null, // obelisk
             null, // gate
             null, // baseZone
@@ -50,5 +50,9 @@ public abstract class G {
         } else {
             pois = _bluePOIs;
         }
+    }
+
+    static {
+        initGlobals(Alliance.BLUE);
     }
 }
