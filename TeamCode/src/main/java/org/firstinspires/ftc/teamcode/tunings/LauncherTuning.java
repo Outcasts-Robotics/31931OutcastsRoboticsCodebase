@@ -13,8 +13,7 @@ public class LauncherTuning extends OpMode {
     @Override
     public void init() {
         launcher = new Launcher(
-                hardwareMap.get(DcMotorEx.class, "flywheel"),
-                hardwareMap.get(Servo.class, "gateServo"),
+                hardwareMap,
                 gamepad1);
         launcher.init();
     }
@@ -26,6 +25,14 @@ public class LauncherTuning extends OpMode {
         } else if (gamepad1.rightBumperWasPressed()) {
             launcher.setGateOperationDelayMs(launcher.getGateOperationDelayMs() + 10);
         }
+        if (gamepad1.aWasPressed()){
+            launcher.setTargetRpm(launcher.getTargetRpm() - 250);
+        }
+        if (gamepad1.bWasPressed()){
+            launcher.setTargetRpm(launcher.getTargetRpm() + 250);
+        }
+
+        telemetry.addData("rpm", launcher.getTargetRpm());
         telemetry.addData("gateOpenMs", launcher.getGateOperationDelayMs());
         telemetry.addData("toLaunch", launcher.getLaunchCount());
         launcher.update();
