@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.components;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -16,15 +17,20 @@ public class Launcher {
     private final Gamepad gamepad;
     private final Servo gate;
     private volatile double targetRpm = 3000;
-    private int gateOperationDelayMs = 330; // Time to keep gate open in milliseconds
+    private int gateOperationDelayMs = 340; // Time to keep gate open in milliseconds
     private volatile int launchCount = 0;
     private volatile boolean isLaunching = false;
     private long lastLaunchTime = 0;
     private Thread workerThread;
-    public Launcher(DcMotorEx flywheel, Servo gate, Gamepad gamepad) {
-        this.flywheel = flywheel;
+
+    public Launcher(HardwareMap hardwareMap, Gamepad gamepad) {
+        this.flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
         this.gamepad = gamepad;
-        this.gate = gate;
+        this.gate = hardwareMap.get(Servo.class, "gateServo");
+    }
+
+    public double getTargetRpm() {
+        return targetRpm;
     }
 
     public void setTargetRpm(double targetRpm) {

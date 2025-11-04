@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.components.WebcamProcessor;
 
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
-            .mass(6) // tuning - mass in kg
+            .mass(7.25) // tuning - mass in kg
             .forwardZeroPowerAcceleration(-34.62719) // tuning - forward deceleration
             .lateralZeroPowerAcceleration(-78.15554) // tuning - lateral deceleration
             ;
@@ -28,10 +28,10 @@ public class Constants {
             .rightFrontMotorName("fr")
             .leftRearMotorName("rl")
             .rightRearMotorName("rr")
-            .leftFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .rightFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .rightRearMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
+            .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
+            .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
             .xVelocity(81) // tuning - forward max velocity
             .yVelocity(65) // tuning - sideway max velocity
             ;
@@ -54,11 +54,11 @@ public class Constants {
 
     public static WebcamProcessor.Inputs webcamProcessorInputs = new WebcamProcessor.Inputs() {
         {
-            cameraPosition = new Position(DistanceUnit.INCH, 3, 3, 3, 0);
-            cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0, -5, 0, 0);
-            detectionMaxAgeMs = 300;
-            telemetryDetails = true;
-            detectAllTags = true;
+            webcamName = "Webcam 1";
+            cameraPosition = new Position(DistanceUnit.INCH, 0, 7, 10, 0);
+            cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0, 5, 0, 0);
+            telemetryDetails = false;
+            detectAllTags = false;
         }
     };
 }
