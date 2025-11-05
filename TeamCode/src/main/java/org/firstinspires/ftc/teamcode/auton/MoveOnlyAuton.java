@@ -18,10 +18,10 @@ public class MoveOnlyAuton extends LinearOpMode {
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         rearLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        frontLeft.setPower(-.3);
-        frontRight.setPower(.3);
-        rearLeft.setPower(.3);
-        rearRight.setPower(-.3);
+        frontLeft.setPower(.3);
+        frontRight.setPower(-.3);
+        rearLeft.setPower(-.3);
+        rearRight.setPower(.3);
 
         Thread.sleep(1000);
 
