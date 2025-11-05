@@ -23,7 +23,7 @@ public class MoveOnlyAuton extends LinearOpMode {
         rearLeft.setPower(-.3);
         rearRight.setPower(.3);
 
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         frontLeft.setPower(0);
         frontRight.setPower(0);
