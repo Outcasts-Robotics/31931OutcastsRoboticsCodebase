@@ -24,4 +24,8 @@ public abstract class Utils {
         return toPedro(new Pose(robotPose.getPosition().x, robotPose.getPosition().y,
                 robotPose.getOrientation().getYaw(AngleUnit.RADIANS), FTCCoordinates.INSTANCE));
     }
+
+    public static Pose offset(Pose pose, double x, double y) {
+        return pose.plus(new Pose(x, y, 0, pose.getCoordinateSystem()));
+    }
 }

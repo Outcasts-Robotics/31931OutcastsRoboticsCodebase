@@ -9,11 +9,12 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.ExposureControl;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.controls.GainControl;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
@@ -63,6 +64,21 @@ public class WebcamProcessor {
         this.detectAllTags = inputs.detectAllTags;
         aprilTagProcessor = new AprilTagProcessor.Builder()
                 .setCameraPose(inputs.cameraPosition, inputs.cameraOrientation)
+//          #2
+//        Focals (pixels) - Fx: 690.141 Fy: 690.141
+//        Optical center - Cx: 413.213 Cy: 288.749
+//        Radial distortion (Brown's Model)
+//        K1: 0.0552367 K2: -0.137876 K3: 0.106257
+//        P1: 0.000903713 P2: 0.00158721
+//        Skew: 0
+//            #1
+//        Focals (pixels) - Fx: 684.534 Fy: 684.534
+//        Optical center - Cx: 403.737 Cy: 287.339
+//        Radial distortion (Brown's Model)
+//        K1: 0.0506626 K2: -0.0634906 K3: -0.0114408
+//        P1: 0.000150679 P2: -0.000150837
+//        Skew: 0
+                .setLensIntrinsics(690.141, 690.141, 413.213, 288.749)
                 .build();
         visionPortal = new VisionPortal.Builder()
                 .setCamera(webcam)
@@ -179,12 +195,11 @@ public class WebcamProcessor {
             tag = detection.metadata.name + "(" + age + "ms)";
         }
         telemetry.addData("Tag", tag);
-        if (telemetryDetails) {
-            if (detection != null) {
-                telemetry.addLine(String.format("%.1f, %.1f, %.1f",
-                        detection.robotPose.getPosition().x, detection.robotPose.getPosition().y, detection.robotPose.getOrientation().getYaw()));
-            }
-        }
+        Pose3D pose = detection.robotPose;
+        Position position = pose.getPosition();
+        YawPitchRollAngles orientation = pose.getOrientation();
+        telemetry.addData("Position", String.format("X:%.1f Y:%.1f Z:%.1f", position.x, position.y, position.z));
+        telemetry.addData("Orientation", String.format("X:%.1f Y:%.1f Z:%.1f", orientation.getRoll(), orientation.getPitch(), orientation.getYaw(AngleUnit.DEGREES)));
     }
 
     private long detectionAgeInMs() {
