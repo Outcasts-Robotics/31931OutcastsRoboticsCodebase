@@ -82,7 +82,7 @@ public class MyTeleOp extends OpMode {
         launcher.update();
 
         if (tag != null) {
-            pinpointLocalizer.setPose(Utils.toPedro(tag.robotPose));
+            pinpointLocalizer.setPose(Utils.offset(Utils.toPedro(tag.robotPose), -5.5, 4.5));
         }
         pinpointLocalizer.update();
         telemetry.addData("pinpoint", pinpointLocalizer.getPose());
