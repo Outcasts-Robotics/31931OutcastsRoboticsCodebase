@@ -64,10 +64,10 @@ public class Launcher {
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 if (launchCount > 0 && !isLaunching) {
-                    isLaunching = true;
-                    lastLaunchTime = System.currentTimeMillis();
-
                     try {
+                        isLaunching = true;
+                        lastLaunchTime = System.currentTimeMillis();
+
                         setFlywheelRPM(targetRpm);
 
                         waitForFlywheelRPM(targetRpm, 2000); // 2 second timeout
@@ -81,13 +81,15 @@ public class Launcher {
                         synchronized (this) {
                             launchCount = Math.max(0, launchCount - 1);
                         }
-
-                        lastLaunchTime = System.currentTimeMillis();
-
-                        Thread.sleep(100);
                     } finally {
                         isLaunching = false;
+                        lastLaunchTime = System.currentTimeMillis();
                     }
+
+
+
+
+                    Thread.sleep(100);
                 } else {
                     // When no launches are queued and we're not currently launching,
                     // wait a bit after the last launch before going to idle speed
@@ -138,9 +140,14 @@ public class Launcher {
 
     public void update() {
         if (gamepad.xWasPressed()) {
-            synchronized (this) {
-                launchCount++;
-            }
+            incrementLaunchCount();
+        }
+    }
+
+    // for Auto purposes
+    public void incrementLaunchCount() {
+        synchronized (this) {
+            launchCount++;
         }
     }
 
