@@ -109,7 +109,11 @@ public class MyTeleOp extends OpMode {
 
     @Override
     public void stop() {
-        launcher.onStop();
+        try {
+            launcher.onStop();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
         telemetry.addData("Status", "Stopping");
     }
 }

@@ -46,48 +46,46 @@ public class Launcher {
     }
 
     public void init() {
-        // Configure flywheel motor
         flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         flywheel.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
         flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        // Start the launch loop in a separate thread
-        workerThread = new Thread(this::internalLaunchLoop);
-        workerThread.start();
+        if (workerThread == null || !workerThread.isAlive()) {
+            workerThread = new Thread(this::internalLaunchLoop);
+            workerThread.start();
+        }
 
         gate.setDirection(Servo.Direction.REVERSE);
-
-        closeGate(); // Ensure gate starts closed
+        closeGate();
     }
+
 
     private void internalLaunchLoop() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 if (launchCount > 0 && !isLaunching) {
-                    try {
-                        isLaunching = true;
-                        lastLaunchTime = System.currentTimeMillis();
+                    isLaunching = true;
+                    lastLaunchTime = System.currentTimeMillis();
 
-                        setFlywheelRPM(targetRpm);
+                    setFlywheelRPM(targetRpm);
 
-                        waitForFlywheelRPM(targetRpm, 2000); // 2 second timeout
+                    waitForFlywheelRPM(targetRpm, 2000); // 2 second timeout
 
-                        openGate();
+                    openGate();
 
-                        Thread.sleep(gateOperationDelayMs);
+                    Thread.sleep(gateOperationDelayMs);
 
-                        closeGate();
+                    closeGate();
 
-                        synchronized (this) {
-                            launchCount = Math.max(0, launchCount - 1);
+                    synchronized (this) {
+                        launchCount = Math.max(0, launchCount - 1);
+                        if (launchCount == 0) {
+                            isLaunching = false;
                         }
-                    } finally {
-                        isLaunching = false;
-                        lastLaunchTime = System.currentTimeMillis();
                     }
 
 
-
+                    lastLaunchTime = System.currentTimeMillis();
 
                     Thread.sleep(100);
                 } else {
@@ -161,9 +159,8 @@ public class Launcher {
         return isLaunching;
     }
 
-    public void onStop() {
+    public void onStop() throws InterruptedException {
         flywheel.setPower(0);
         closeGate();
-        workerThread.interrupt();
     }
 }
