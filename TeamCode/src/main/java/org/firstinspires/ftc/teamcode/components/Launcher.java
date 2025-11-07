@@ -22,6 +22,7 @@ public class Launcher {
     private volatile boolean isLaunching = false;
     private long lastLaunchTime = 0;
     private Thread workerThread;
+    private volatile boolean isRunning = true;
 
     public Launcher(HardwareMap hardwareMap, Gamepad gamepad) {
         this.flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
@@ -46,6 +47,8 @@ public class Launcher {
     }
 
     public void init() {
+        isRunning = true;
+
         flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         flywheel.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
         flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -61,15 +64,15 @@ public class Launcher {
 
 
     private void internalLaunchLoop() {
-        while (!Thread.currentThread().isInterrupted()) {
+        while (isRunning) {
             try {
-                if (launchCount > 0 && !isLaunching) {
+                if (launchCount > 0) {
                     isLaunching = true;
                     lastLaunchTime = System.currentTimeMillis();
 
                     setFlywheelRPM(targetRpm);
 
-                    waitForFlywheelRPM(targetRpm, 2000); // 2 second timeout
+                    waitForFlywheelRPM(targetRpm, 2000);
 
                     openGate();
 
@@ -84,23 +87,18 @@ public class Launcher {
                         }
                     }
 
-
                     lastLaunchTime = System.currentTimeMillis();
 
                     Thread.sleep(100);
                 } else {
-                    // When no launches are queued and we're not currently launching,
-                    // wait a bit after the last launch before going to idle speed
-                    if (!isLaunching && launchCount == 0 &&
-                            System.currentTimeMillis() - lastLaunchTime > IDLE_DELAY_MS) {
+                    if (System.currentTimeMillis() - lastLaunchTime > IDLE_DELAY_MS) {
                         setFlywheelRPM(IDLE_RPM);
                     }
 
                     Thread.sleep(10);
                 }
             } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
+                isRunning = false; // interrupted
             }
         }
     }
@@ -160,7 +158,8 @@ public class Launcher {
     }
 
     public void onStop() throws InterruptedException {
-        flywheel.setPower(0);
+        flywheel.setVelocity(0);
         closeGate();
+        workerThread.join();
     }
 }

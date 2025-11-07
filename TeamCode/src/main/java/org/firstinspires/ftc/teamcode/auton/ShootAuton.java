@@ -40,8 +40,10 @@ public class ShootAuton extends LinearOpMode {
             Thread.sleep(3000);
         }
 
-
-
+        while (launcher.isLaunching()) {
+            Thread.sleep(100);
+        }
+        launcher.onStop();
 
     }
 }
