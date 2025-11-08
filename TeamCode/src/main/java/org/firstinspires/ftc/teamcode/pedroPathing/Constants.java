@@ -40,7 +40,7 @@ public class Constants {
     public static PinpointConstants pinpointConstants = new PinpointConstants()
             .hardwareMapName("pinpoint")
             .forwardPodY(-2)
-            .strafePodX(-5)
+            .strafePodX(-6.5)
             .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED)
             .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
 
@@ -55,8 +55,8 @@ public class Constants {
     public static WebcamProcessor.Inputs webcamProcessorInputs = new WebcamProcessor.Inputs() {
         {
             webcamName = "Webcam 1";
-            cameraPosition = new Position(DistanceUnit.INCH, 0, 7, 10, 0);
-            cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0, 5, 0, 0);
+            cameraPosition = new Position(DistanceUnit.INCH, 0, 10, 15.8, 0);
+            cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0, 15, 0, 0);
             telemetryDetails = false;
             detectAllTags = false;
         }

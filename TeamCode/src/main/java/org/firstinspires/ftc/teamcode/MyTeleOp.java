@@ -11,10 +11,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.components.AutoAim;
 import org.firstinspires.ftc.teamcode.components.Launcher;
 import org.firstinspires.ftc.teamcode.components.MecanumDrive;
-import org.firstinspires.ftc.teamcode.components.WebcamProcessor;
 import org.firstinspires.ftc.teamcode.helpers.LoopTimer;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
-import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 import java.util.function.DoubleSupplier;
 
@@ -24,7 +22,7 @@ public class MyTeleOp extends OpMode {
     private final TelemetryManager panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
 
     private MecanumDrive mecanumDrive;
-    private WebcamProcessor webcamProcessor;
+    //    private WebcamProcessor webcamProcessor;
     private AutoAim autoAim;
     private PinpointLocalizer pinpointLocalizer;
     private Launcher launcher;
@@ -40,8 +38,8 @@ public class MyTeleOp extends OpMode {
         pinpointLocalizer = new PinpointLocalizer(hardwareMap, Constants.pinpointConstants);
         pinpointLocalizer.resetIMU();
 
-        webcamProcessor = new WebcamProcessor(hardwareMap, telemetry, Constants.webcamProcessorInputs);
-        webcamProcessor.initialize();
+//        webcamProcessor = new WebcamProcessor(hardwareMap, telemetry, Constants.webcamProcessorInputs);
+//        webcamProcessor.initialize();
 
         DoubleSupplier pinpointHeading = () -> pinpointLocalizer.getPose().getHeading();
         mecanumDrive = new MecanumDrive(hardwareMap, Constants.mecanumConstants, telemetry, 1.0, pinpointHeading);
@@ -58,7 +56,7 @@ public class MyTeleOp extends OpMode {
 
     @Override
     public void init_loop() {
-        webcamProcessor.initLoopUpdate(gamepad1);
+//        webcamProcessor.initLoopUpdate(gamepad1);
         if (gamepad1.leftBumperWasPressed() || gamepad1.rightBumperWasPressed()) {
             G.initGlobals(G.alliance == Alliance.RED ? Alliance.BLUE : Alliance.RED);
         }
@@ -76,14 +74,14 @@ public class MyTeleOp extends OpMode {
     public void loop() {
         loopTimer.update();
 
-        webcamProcessor.update();
-        AprilTagDetection tag = webcamProcessor.getDetection();
+//        webcamProcessor.update();
+//        AprilTagDetection tag = webcamProcessor.getDetection();
 
         launcher.update();
 
-        if (tag != null) {
-            pinpointLocalizer.setPose(Utils.toPedro(tag.robotPose));
-        }
+//        if (tag != null) {
+//            pinpointLocalizer.setPose(Utils.offset(Utils.toPedro(tag.robotPose), -5.5, 4.5));
+//        }
         pinpointLocalizer.update();
         telemetry.addData("pinpoint", pinpointLocalizer.getPose());
 

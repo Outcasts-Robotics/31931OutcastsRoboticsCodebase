@@ -26,7 +26,7 @@ public class AutoAimPidTuner extends OpMode {
     private AutoAim autoAim;
     private PinpointLocalizer pinpointLocalizer;
 
-    private Pose lastTagPose;
+    private Pose lastRobotPosePedro;
 
     private int stage = 1; // 1 = kp, 2 = ki, 3 = kd
     private Pose3D lastRobotPose;
@@ -54,19 +54,20 @@ public class AutoAimPidTuner extends OpMode {
         AprilTagDetection tag = webcamProcessor.getDetection();
         if (tag != null) {
             lastRobotPose = tag.robotPose;
-            lastTagPose = Utils.toPedro(tag.robotPose);
-            pinpointLocalizer.setPose(lastTagPose);
+            lastRobotPosePedro = Utils.offset(Utils.toPedro(tag.robotPose), -5.5, 4.5);
+
+            pinpointLocalizer.setPose(lastRobotPosePedro);
         }
         pinpointLocalizer.update();
 
-        if (lastTagPose != null) {
+        if (lastRobotPosePedro != null) {
             telemetry.addData("lastTagPose", String.format("x=%.1f y=%.1f h=%.1f %s",
-                    lastTagPose.getX(), lastTagPose.getY(),
-                    AngleUnit.DEGREES.fromRadians(lastTagPose.getHeading()),
-                    lastTagPose.getCoordinateSystem().getClass().getSimpleName()));
+                    lastRobotPosePedro.getX(), lastRobotPosePedro.getY(),
+                    AngleUnit.DEGREES.fromRadians(lastRobotPosePedro.getHeading()),
+                    lastRobotPosePedro.getCoordinateSystem().getClass().getSimpleName()));
             telemetry.addData("lastRobotPose", String.format("x=%.1f y=%.1f h=%.1f",
                     lastRobotPose.getPosition().x, lastRobotPose.getPosition().y,
-                    lastRobotPose.getOrientation().getYaw()));
+                    lastRobotPose.getOrientation().getYaw(AngleUnit.DEGREES)));
         }
 
         if (gamepad1.left_trigger > 0.3 && !autoAim.isActive()) {
