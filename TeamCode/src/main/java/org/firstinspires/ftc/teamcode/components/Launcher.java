@@ -22,6 +22,7 @@ public class Launcher {
     private volatile boolean isLaunching = false;
     private long lastLaunchTime = 0;
     private Thread workerThread;
+    private volatile boolean isRunning = true;
 
     public Launcher(HardwareMap hardwareMap, Gamepad gamepad) {
         this.flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
@@ -46,61 +47,58 @@ public class Launcher {
     }
 
     public void init() {
-        // Configure flywheel motor
+        isRunning = true;
+
         flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         flywheel.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
         flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        // Start the launch loop in a separate thread
-        workerThread = new Thread(this::internalLaunchLoop);
-        workerThread.start();
+        if (workerThread == null || !workerThread.isAlive()) {
+            workerThread = new Thread(this::internalLaunchLoop);
+            workerThread.start();
+        }
 
         gate.setDirection(Servo.Direction.REVERSE);
-
-        closeGate(); // Ensure gate starts closed
+        closeGate();
     }
 
+
     private void internalLaunchLoop() {
-        while (!Thread.currentThread().isInterrupted()) {
+        while (isRunning) {
             try {
-                if (launchCount > 0 && !isLaunching) {
+                if (launchCount > 0) {
                     isLaunching = true;
                     lastLaunchTime = System.currentTimeMillis();
 
-                    try {
-                        setFlywheelRPM(targetRpm);
+                    setFlywheelRPM(targetRpm);
 
-                        waitForFlywheelRPM(targetRpm, 2000); // 2 second timeout
+                    waitForFlywheelRPM(targetRpm, 2000);
 
-                        openGate();
+                    openGate();
 
-                        Thread.sleep(gateOperationDelayMs);
+                    Thread.sleep(gateOperationDelayMs);
 
-                        closeGate();
+                    closeGate();
 
-                        synchronized (this) {
-                            launchCount = Math.max(0, launchCount - 1);
+                    synchronized (this) {
+                        launchCount = Math.max(0, launchCount - 1);
+                        if (launchCount == 0) {
+                            isLaunching = false;
                         }
-
-                        lastLaunchTime = System.currentTimeMillis();
-
-                        Thread.sleep(100);
-                    } finally {
-                        isLaunching = false;
                     }
+
+                    lastLaunchTime = System.currentTimeMillis();
+
+                    Thread.sleep(100);
                 } else {
-                    // When no launches are queued and we're not currently launching,
-                    // wait a bit after the last launch before going to idle speed
-                    if (!isLaunching && launchCount == 0 &&
-                            System.currentTimeMillis() - lastLaunchTime > IDLE_DELAY_MS) {
+                    if (System.currentTimeMillis() - lastLaunchTime > IDLE_DELAY_MS) {
                         setFlywheelRPM(IDLE_RPM);
                     }
 
                     Thread.sleep(10);
                 }
             } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
+                isRunning = false; // interrupted
             }
         }
     }
@@ -138,9 +136,14 @@ public class Launcher {
 
     public void update() {
         if (gamepad.xWasPressed()) {
-            synchronized (this) {
-                launchCount++;
-            }
+            incrementLaunchCount();
+        }
+    }
+
+    // for Auto purposes
+    public void incrementLaunchCount() {
+        synchronized (this) {
+            launchCount++;
         }
     }
 
@@ -154,9 +157,9 @@ public class Launcher {
         return isLaunching;
     }
 
-    public void onStop() {
-        flywheel.setPower(0);
+    public void onStop() throws InterruptedException {
+        flywheel.setVelocity(0);
         closeGate();
-        workerThread.interrupt();
+        workerThread.join();
     }
 }
