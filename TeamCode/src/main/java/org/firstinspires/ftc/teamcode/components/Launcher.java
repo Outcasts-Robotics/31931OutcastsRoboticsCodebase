@@ -8,16 +8,10 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class Launcher {
-    private static final double IDLE_RPM = 0;
-    private static final long IDLE_DELAY_MS = 2000; // Delay before switching to idle speed after last launch
-    private static final double RPM_TOLERANCE = 80; // RPM tolerance for considering target speed reached
-    private static final double GATE_OPEN_POSITION = 0.2; // Adjust based on your servo's range
-    private static final double GATE_CLOSE_POSITION = 0.4; // Adjust based on your servo's range
     private final DcMotorEx flywheel;
     private final Gamepad gamepad;
     private final Servo gate;
     private volatile double targetRpm = 3000;
-    private int gateOperationDelayMs = 340; // Time to keep gate open in milliseconds
     private volatile int launchCount = 0;
     private volatile boolean isLaunching = false;
     private long lastLaunchTime = 0;
@@ -36,14 +30,6 @@ public class Launcher {
 
     public void setTargetRpm(double targetRpm) {
         this.targetRpm = targetRpm;
-    }
-
-    public int getGateOperationDelayMs() {
-        return gateOperationDelayMs;
-    }
-
-    public void setGateOperationDelayMs(int gateOperationDelayMs) {
-        this.gateOperationDelayMs = gateOperationDelayMs;
     }
 
     public void init() {
@@ -68,7 +54,6 @@ public class Launcher {
             try {
                 if (launchCount > 0) {
                     isLaunching = true;
-                    lastLaunchTime = System.currentTimeMillis();
 
                     setFlywheelRPM(targetRpm);
 
@@ -76,7 +61,7 @@ public class Launcher {
 
                     openGate();
 
-                    Thread.sleep(gateOperationDelayMs);
+                    Thread.sleep(340);
 
                     closeGate();
 
@@ -91,11 +76,11 @@ public class Launcher {
 
                     Thread.sleep(700);
                 } else {
-                    if (System.currentTimeMillis() - lastLaunchTime > IDLE_DELAY_MS) {
-                        setFlywheelRPM(IDLE_RPM);
+                    if (System.currentTimeMillis() - lastLaunchTime > 2000) {
+                        setFlywheelRPM(0);
                     }
 
-                    Thread.sleep(10);
+                    Thread.sleep(100);
                 }
             } catch (InterruptedException e) {
                 isRunning = false; // interrupted
@@ -118,7 +103,7 @@ public class Launcher {
         ElapsedTime timer = new ElapsedTime();
         timer.reset();
 
-        while (Math.abs(getFlywheelRPM() - targetRPM) > RPM_TOLERANCE) {
+        while (Math.abs(getFlywheelRPM() - targetRPM) > 100) {
             if (timer.milliseconds() > timeoutMs) {
                 break; // Timeout reached
             }
@@ -127,11 +112,11 @@ public class Launcher {
     }
 
     private void openGate() {
-        gate.setPosition(GATE_OPEN_POSITION);
+        gate.setPosition(0.2);
     }
 
     private void closeGate() {
-        gate.setPosition(GATE_CLOSE_POSITION);
+        gate.setPosition(0.4);
     }
 
     public void update() {
@@ -140,7 +125,6 @@ public class Launcher {
         }
     }
 
-    // for Auto purposes
     public void incrementLaunchCount() {
         synchronized (this) {
             launchCount++;

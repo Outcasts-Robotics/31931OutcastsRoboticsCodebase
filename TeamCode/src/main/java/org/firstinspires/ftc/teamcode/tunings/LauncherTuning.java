@@ -20,11 +20,6 @@ public class LauncherTuning extends OpMode {
 
     @Override
     public void loop() {
-        if (gamepad1.leftBumperWasPressed()) {
-            launcher.setGateOperationDelayMs(launcher.getGateOperationDelayMs() - 10);
-        } else if (gamepad1.rightBumperWasPressed()) {
-            launcher.setGateOperationDelayMs(launcher.getGateOperationDelayMs() + 10);
-        }
         if (gamepad1.aWasPressed()){
             launcher.setTargetRpm(launcher.getTargetRpm() - 250);
         }
@@ -33,7 +28,6 @@ public class LauncherTuning extends OpMode {
         }
 
         telemetry.addData("rpm", launcher.getTargetRpm());
-        telemetry.addData("gateOpenMs", launcher.getGateOperationDelayMs());
         telemetry.addData("toLaunch", launcher.getLaunchCount());
         launcher.update();
     }
