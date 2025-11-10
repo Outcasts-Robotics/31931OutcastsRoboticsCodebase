@@ -34,16 +34,13 @@ public class Launcher {
 
     public void init() {
         isRunning = true;
-
         flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         flywheel.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
         flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
-
         if (workerThread == null || !workerThread.isAlive()) {
             workerThread = new Thread(this::internalLaunchLoop);
             workerThread.start();
         }
-
         gate.setDirection(Servo.Direction.REVERSE);
         closeGate();
     }
@@ -54,32 +51,22 @@ public class Launcher {
             try {
                 if (launchCount > 0) {
                     isLaunching = true;
-
                     setFlywheelRPM(targetRpm);
-
-                    waitForFlywheelRPM(targetRpm, 2000);
-
+                    waitForFlywheelRPM(targetRpm);
                     openGate();
-
                     Thread.sleep(340);
-
                     closeGate();
-
                     synchronized (this) {
                         launchCount = Math.max(0, launchCount - 1);
                         if (launchCount == 0) {
                             isLaunching = false;
                         }
                     }
-
                     lastLaunchTime = System.currentTimeMillis();
-
                     Thread.sleep(700);
                 } else {
-                    if (System.currentTimeMillis() - lastLaunchTime > 2000) {
+                    if (System.currentTimeMillis() - lastLaunchTime > 2000)
                         setFlywheelRPM(0);
-                    }
-
                     Thread.sleep(100);
                 }
             } catch (InterruptedException e) {
@@ -89,25 +76,19 @@ public class Launcher {
     }
 
     private double getFlywheelRPM() {
-        // Convert ticks per second to RPM
-        return (flywheel.getVelocity() * 60.0) / 28.0; // 28:1 motor with 1:1 gearing
+        return (flywheel.getVelocity() * 60.0) / 28.0;
     }
 
     private void setFlywheelRPM(double rpm) {
-        // Convert RPM to ticks per second
-        double ticksPerSecond = (rpm * 28.0) / 60.0; // 28:1 motor with 1:1 gearing to flywheel
-        flywheel.setVelocity(ticksPerSecond);
+        flywheel.setVelocity((rpm * 28.0) / 60.0);
     }
 
-    private void waitForFlywheelRPM(double targetRPM, long timeoutMs) throws InterruptedException {
+    private void waitForFlywheelRPM(double targetRPM) throws InterruptedException {
         ElapsedTime timer = new ElapsedTime();
         timer.reset();
-
         while (Math.abs(getFlywheelRPM() - targetRPM) > 100) {
-            if (timer.milliseconds() > timeoutMs) {
-                break; // Timeout reached
-            }
-            Thread.sleep(10); // Small delay to prevent busy waiting
+            if (timer.milliseconds() > 2500) break;
+            Thread.sleep(10);
         }
     }
 

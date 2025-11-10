@@ -22,26 +22,20 @@ public class MecanumDrive {
         frontRightMotor = hw.get(DcMotorEx.class, mecanumConstants.rightFrontMotorName);
         backLeftMotor = hw.get(DcMotorEx.class, mecanumConstants.leftRearMotorName);
         backRightMotor = hw.get(DcMotorEx.class, mecanumConstants.rightRearMotorName);
-
         frontLeftMotor.setDirection(mecanumConstants.leftFrontMotorDirection);
         frontRightMotor.setDirection(mecanumConstants.rightFrontMotorDirection);
         backLeftMotor.setDirection(mecanumConstants.leftRearMotorDirection);
         backRightMotor.setDirection(mecanumConstants.rightRearMotorDirection);
-
         maxPower = mecanumConstants.maxPower;
-
         this.yawInRadProvider = yawInRadProvider;
     }
 
     public void update(Gamepad gamepad) {
         boolean relativeToBot = yawInRadProvider == null || gamepad.left_bumper;
-        setDrive(-gamepad.left_stick_y,
-                gamepad.left_stick_x,
-                gamepad.right_stick_x,
-                relativeToBot);
+        setDrive(-gamepad.left_stick_y, gamepad.left_stick_x, gamepad.right_stick_x, relativeToBot);
     }
 
-    public void setDrive(double forward, double strafe, double rotate, boolean relativeToBot) {
+    private void setDrive(double forward, double strafe, double rotate, boolean relativeToBot) {
         if (!relativeToBot) {
             double theta = Math.atan2(forward, strafe);
             double r = Math.hypot(strafe, forward);
