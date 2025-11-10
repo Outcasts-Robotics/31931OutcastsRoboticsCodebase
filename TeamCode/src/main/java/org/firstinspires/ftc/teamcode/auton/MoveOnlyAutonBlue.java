@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @Autonomous
-public class MoveOnlyAuton extends LinearOpMode {
+public class MoveOnlyAutonBlue extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         waitForStart();

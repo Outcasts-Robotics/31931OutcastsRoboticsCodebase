@@ -89,7 +89,7 @@ public class Launcher {
 
                     lastLaunchTime = System.currentTimeMillis();
 
-                    Thread.sleep(100);
+                    Thread.sleep(700);
                 } else {
                     if (System.currentTimeMillis() - lastLaunchTime > IDLE_DELAY_MS) {
                         setFlywheelRPM(IDLE_RPM);
@@ -158,6 +158,7 @@ public class Launcher {
     }
 
     public void onStop() throws InterruptedException {
+        isRunning = false;
         flywheel.setVelocity(0);
         closeGate();
         workerThread.join();
