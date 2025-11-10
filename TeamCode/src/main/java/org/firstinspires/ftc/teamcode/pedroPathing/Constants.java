@@ -14,7 +14,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
-import org.firstinspires.ftc.teamcode.components.WebcamProcessor;
 
 public class Constants {
     public static FollowerConstants followerConstants = new FollowerConstants()
@@ -51,14 +50,4 @@ public class Constants {
                 .mecanumDrivetrain(mecanumConstants)
                 .build();
     }
-
-    public static WebcamProcessor.Inputs webcamProcessorInputs = new WebcamProcessor.Inputs() {
-        {
-            webcamName = "Webcam 1";
-            cameraPosition = new Position(DistanceUnit.INCH, 0, 10, 15.8, 0);
-            cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0, 15, 0, 0);
-            telemetryDetails = false;
-            detectAllTags = false;
-        }
-    };
 }
