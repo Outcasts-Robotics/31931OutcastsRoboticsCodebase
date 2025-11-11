@@ -3,7 +3,9 @@ package org.firstinspires.ftc.teamcode;
 
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+import com.pedropathing.ftc.localization.constants.PinpointConstants;
 import com.pedropathing.ftc.localization.localizers.PinpointLocalizer;
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -15,17 +17,20 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 @TeleOp(name = "MyTeleOp", group = "TeleOp")
 public class MyTeleOp extends OpMode {
     private final TelemetryManager panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
-
     private MecanumDrive mecanumDrive;
     private PinpointLocalizer pinpointLocalizer;
     private Launcher launcher;
 
-
     @Override
     public void init() {
-        pinpointLocalizer = new PinpointLocalizer(hardwareMap, Constants.pinpointConstants);
+        pinpointLocalizer = new PinpointLocalizer(hardwareMap, new PinpointConstants()
+                .hardwareMapName("pinpoint")
+                .forwardPodY(-2)
+                .strafePodX(-6.5)
+                .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED)
+                .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD));
         pinpointLocalizer.resetIMU();
-        mecanumDrive = new MecanumDrive(hardwareMap, Constants.mecanumConstants, () -> pinpointLocalizer.getPose().getHeading());
+        mecanumDrive = new MecanumDrive(hardwareMap, () -> pinpointLocalizer.getPose().getHeading());
         launcher = new Launcher(hardwareMap, gamepad1);
         launcher.init();
     }

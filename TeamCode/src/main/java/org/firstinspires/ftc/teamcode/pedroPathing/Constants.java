@@ -16,38 +16,4 @@ import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 public class Constants {
-    public static FollowerConstants followerConstants = new FollowerConstants()
-            .mass(7.25) // tuning - mass in kg
-            .forwardZeroPowerAcceleration(-34.62719) // tuning - forward deceleration
-            .lateralZeroPowerAcceleration(-78.15554) // tuning - lateral deceleration
-            ;
-    public static MecanumConstants mecanumConstants = new MecanumConstants()
-            .maxPower(0.8)
-            .leftFrontMotorName("fl")
-            .rightFrontMotorName("fr")
-            .leftRearMotorName("rl")
-            .rightRearMotorName("rr")
-            .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
-            .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-            .xVelocity(81) // tuning - forward max velocity
-            .yVelocity(65) // tuning - sideway max velocity
-            ;
-
-    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
-    public static PinpointConstants pinpointConstants = new PinpointConstants()
-            .hardwareMapName("pinpoint")
-            .forwardPodY(-2)
-            .strafePodX(-6.5)
-            .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED)
-            .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD);
-
-    public static Follower createFollower(HardwareMap hardwareMap) {
-        return new FollowerBuilder(followerConstants, hardwareMap)
-                .pathConstraints(pathConstraints)
-                .pinpointLocalizer(pinpointConstants)
-                .mecanumDrivetrain(mecanumConstants)
-                .build();
-    }
 }

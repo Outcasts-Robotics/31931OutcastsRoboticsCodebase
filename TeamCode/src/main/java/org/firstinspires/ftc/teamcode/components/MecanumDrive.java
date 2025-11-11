@@ -1,7 +1,9 @@
 package org.firstinspires.ftc.teamcode.components;
 
 import com.pedropathing.ftc.drivetrains.MecanumConstants;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -17,17 +19,22 @@ public class MecanumDrive {
     private final DcMotorEx backRightMotor;
     private final DoubleSupplier yawInRadProvider;
 
-    public MecanumDrive(HardwareMap hw, MecanumConstants mecanumConstants, DoubleSupplier yawInRadProvider) {
-        frontLeftMotor = hw.get(DcMotorEx.class, mecanumConstants.leftFrontMotorName);
-        frontRightMotor = hw.get(DcMotorEx.class, mecanumConstants.rightFrontMotorName);
-        backLeftMotor = hw.get(DcMotorEx.class, mecanumConstants.leftRearMotorName);
-        backRightMotor = hw.get(DcMotorEx.class, mecanumConstants.rightRearMotorName);
-        frontLeftMotor.setDirection(mecanumConstants.leftFrontMotorDirection);
-        frontRightMotor.setDirection(mecanumConstants.rightFrontMotorDirection);
-        backLeftMotor.setDirection(mecanumConstants.leftRearMotorDirection);
-        backRightMotor.setDirection(mecanumConstants.rightRearMotorDirection);
-        maxPower = mecanumConstants.maxPower;
+    public MecanumDrive(HardwareMap hw, DoubleSupplier yawInRadProvider) {
+        frontLeftMotor = hw.get(DcMotorEx.class, "fl");
+        frontRightMotor = hw.get(DcMotorEx.class, "fr");
+        backLeftMotor = hw.get(DcMotorEx.class, "rl");
+        backRightMotor = hw.get(DcMotorEx.class, "rr");
+        frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontRightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        backRightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        frontLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        maxPower = 0.7;
         this.yawInRadProvider = yawInRadProvider;
+
     }
 
     public void update(Gamepad gamepad) {
