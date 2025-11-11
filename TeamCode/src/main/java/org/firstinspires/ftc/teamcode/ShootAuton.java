@@ -37,14 +37,12 @@ public class ShootAuton extends LinearOpMode {
 
         telemetry.addLine("Launching...");
         telemetry.update();
+
         for (int i = 0; i < 4; i++) {
-            launcher.incrementLaunchCount();
+            launcher.launch();
             Thread.sleep(3000);
         }
 
-        while (launcher.isLaunching()) {
-            Thread.sleep(100);
-        }
         telemetry.addLine("Stopping launcher");
         telemetry.update();
         launcher.onStop();

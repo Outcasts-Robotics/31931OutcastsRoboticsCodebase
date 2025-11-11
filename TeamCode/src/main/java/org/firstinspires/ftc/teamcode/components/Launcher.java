@@ -12,11 +12,6 @@ public class Launcher {
     private final Gamepad gamepad;
     private final Servo gate;
     private volatile double targetRpm = 3000;
-    private volatile int launchCount = 0;
-    private volatile boolean isLaunching = false;
-    private long lastLaunchTime = 0;
-    private Thread workerThread;
-    private volatile boolean isRunning = true;
 
     public Launcher(HardwareMap hardwareMap, Gamepad gamepad) {
         this.flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
@@ -33,46 +28,11 @@ public class Launcher {
     }
 
     public void init() {
-        isRunning = true;
         flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         flywheel.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
         flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
-        if (workerThread == null || !workerThread.isAlive()) {
-            workerThread = new Thread(this::internalLaunchLoop);
-            workerThread.start();
-        }
         gate.setDirection(Servo.Direction.REVERSE);
         closeGate();
-    }
-
-
-    private void internalLaunchLoop() {
-        while (isRunning) {
-            try {
-                if (launchCount > 0) {
-                    isLaunching = true;
-                    setFlywheelRPM(targetRpm);
-                    waitForFlywheelRPM(targetRpm);
-                    openGate();
-                    Thread.sleep(340);
-                    closeGate();
-                    synchronized (this) {
-                        launchCount = Math.max(0, launchCount - 1);
-                        if (launchCount == 0) {
-                            isLaunching = false;
-                        }
-                    }
-                    lastLaunchTime = System.currentTimeMillis();
-                    Thread.sleep(700);
-                } else {
-                    if (System.currentTimeMillis() - lastLaunchTime > 2000)
-                        setFlywheelRPM(0);
-                    Thread.sleep(100);
-                }
-            } catch (InterruptedException e) {
-                isRunning = false; // interrupted
-            }
-        }
     }
 
     private double getFlywheelRPM() {
@@ -102,30 +62,28 @@ public class Launcher {
 
     public void update() {
         if (gamepad.xWasPressed()) {
-            incrementLaunchCount();
+            launch();
         }
-    }
-
-    public void incrementLaunchCount() {
-        synchronized (this) {
-            launchCount++;
-        }
-    }
-
-    public int getLaunchCount() {
-        synchronized (this) {
-            return launchCount;
-        }
-    }
-
-    public boolean isLaunching() {
-        return isLaunching;
     }
 
     public void onStop() throws InterruptedException {
-        isRunning = false;
         flywheel.setVelocity(0);
         closeGate();
-        workerThread.join();
+    }
+
+    public void launch() {
+        setFlywheelRPM(targetRpm);
+        try {
+            waitForFlywheelRPM(targetRpm);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        openGate();
+        try {
+            Thread.sleep(340);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        closeGate();
     }
 }

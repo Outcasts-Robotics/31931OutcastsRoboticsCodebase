@@ -16,4 +16,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 public class Constants {
+    public static Follower createFollower(HardwareMap hardwareMap) {
+        return null;
+    }
 }

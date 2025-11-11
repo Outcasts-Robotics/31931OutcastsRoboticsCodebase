@@ -28,7 +28,6 @@ public class LauncherTuning extends OpMode {
         }
 
         telemetry.addData("rpm", launcher.getTargetRpm());
-        telemetry.addData("toLaunch", launcher.getLaunchCount());
         launcher.update();
     }
 }
