@@ -66,7 +66,7 @@ public class Launcher {
         }
     }
 
-    public void onStop() throws InterruptedException {
+    public void onStop() {
         flywheel.setVelocity(0);
         closeGate();
     }
@@ -85,5 +85,11 @@ public class Launcher {
             throw new RuntimeException(e);
         }
         closeGate();
+        try {
+            Thread.sleep(340);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        setFlywheelRPM(0);
     }
 }
