@@ -18,7 +18,7 @@ public class MoveOnlyAutonRed extends LinearOpMode {
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         rearLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        Thread.sleep(20000);
+        Thread.sleep(25000);
 
         frontLeft.setPower(-.3);
         frontRight.setPower(.3);
