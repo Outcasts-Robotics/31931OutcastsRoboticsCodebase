@@ -14,7 +14,7 @@ public class LauncherTuning extends OpMode {
     public void init() {
         launcher = new Launcher(
                 hardwareMap,
-                gamepad1);
+                gamepad1, null);
         launcher.init();
     }
 

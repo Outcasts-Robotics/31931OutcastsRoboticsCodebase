@@ -64,7 +64,8 @@ public class Launcher {
 
     public void update() {
         if (gamepad.xWasPressed()) {
-            mecanumDrive.freeze();
+            if (mecanumDrive != null)
+                mecanumDrive.freeze();
             launch();
         }
     }
