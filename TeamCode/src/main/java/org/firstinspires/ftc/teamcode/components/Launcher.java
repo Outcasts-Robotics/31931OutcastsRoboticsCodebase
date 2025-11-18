@@ -11,12 +11,14 @@ public class Launcher {
     private final DcMotorEx flywheel;
     private final Gamepad gamepad;
     private final Servo gate;
+    private final MecanumDrive mecanumDrive;
     private volatile double targetRpm = 3000;
 
-    public Launcher(HardwareMap hardwareMap, Gamepad gamepad) {
+    public Launcher(HardwareMap hardwareMap, Gamepad gamepad, MecanumDrive mecanumDrive) {
         this.flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
         this.gamepad = gamepad;
         this.gate = hardwareMap.get(Servo.class, "gateServo");
+        this.mecanumDrive = mecanumDrive;
     }
 
     public double getTargetRpm() {
@@ -62,6 +64,7 @@ public class Launcher {
 
     public void update() {
         if (gamepad.xWasPressed()) {
+            mecanumDrive.freeze();
             launch();
         }
     }
