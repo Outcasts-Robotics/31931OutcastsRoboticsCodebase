@@ -66,4 +66,8 @@ public class MecanumDrive {
             backRightMotor.setPower(maxPower * (backRightPower / denominator));
         }
     }
+
+    public void freeze() {
+        setDrive(0,0,0,false);
+    }
 }

@@ -25,7 +25,7 @@ public class MyTeleOp extends OpMode {
         pinpointLocalizer = new PinpointLocalizer(hardwareMap, new PinpointConstants().hardwareMapName("pinpoint").forwardPodY(-2).strafePodX(-6.5).forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED).strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD));
         pinpointLocalizer.resetIMU();
         mecanumDrive = new MecanumDrive(hardwareMap, () -> pinpointLocalizer.getPose().getHeading());
-        launcher = new Launcher(hardwareMap, gamepad1);
+        launcher = new Launcher(hardwareMap, gamepad1, mecanumDrive);
         launcher.init();
     }
 
