@@ -39,4 +39,15 @@ public class Intake {
     public double getRPM(){
         return (intakeMotor.getVelocity() / ENCODER_RESOLUTION) * 60;
     }
+
+    public boolean isRevvedUp() {
+        double power = getCommandedPower();
+        double expected = MOTOR_RPM * power;
+        double actual = getRPM();
+
+        if (Math.abs(power) < 0.1) return true;
+
+        return Math.abs(actual - expected) <= Math.abs(expected) * 0.05;
+    }
+
 }
