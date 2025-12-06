@@ -34,6 +34,7 @@ public class Spindex {
         spindexMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         spindexMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         spindexMotor.setTargetPositionTolerance(2);
+        colorSensor.enableLed(true);
     }
 
     public void goToSlotIntake(int slot) {
