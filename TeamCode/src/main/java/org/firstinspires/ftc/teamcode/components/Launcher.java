@@ -14,7 +14,7 @@ public class Launcher {
     private final MecanumDrive mecanumDrive;
     private volatile double targetRpm = 3000;
 
-    public Launcher(HardwareMap hardwareMap, Gamepad gamepad, MecanumDrive mecanumDrive) {  // TODO Change to roller outtake instead of gate outtake
+    public Launcher(HardwareMap hardwareMap, Gamepad gamepad, MecanumDrive mecanumDrive) {
         this.flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
         this.gamepad = gamepad;
         this.gate = hardwareMap.get(Servo.class, "gateServo");

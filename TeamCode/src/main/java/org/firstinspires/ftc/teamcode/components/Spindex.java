@@ -17,7 +17,7 @@ public class Spindex {
     ColorSensor colorSensor;
     DistanceSensor distanceSensor;
 
-    SpinDexMode currentMode = SpinDexMode.INTAKE;
+    public SpinDexMode currentMode = SpinDexMode.INTAKE;
     ArtifactColor[] index = {ArtifactColor.BLANK, ArtifactColor.BLANK, ArtifactColor.BLANK};
 
     int currentSlotIntake = 0;
@@ -26,7 +26,7 @@ public class Spindex {
     int[] slotPositionsIntake = {0, (int) (ENCODER_RESOLUTION / 3), (int) (ENCODER_RESOLUTION * 2 / 3)};
     int[] slotPositionsOuttake = {(int) (ENCODER_RESOLUTION / 2), (int) (ENCODER_RESOLUTION / 6), (int) (ENCODER_RESOLUTION * 5 / 6)};
 
-    Spindex(HardwareMap hardwareMap, String motorName, String colorSensorName) {
+    public Spindex(HardwareMap hardwareMap, String motorName, String colorSensorName) {
         this.spindexMotor = hardwareMap.get(DcMotorEx.class, motorName);
         this.colorSensor = hardwareMap.get(ColorSensor.class, colorSensorName);
         this.distanceSensor = hardwareMap.get(DistanceSensor.class, colorSensorName);
@@ -71,7 +71,7 @@ public class Spindex {
         this.currentSlotIntake = (slot + 2) % 3;
         spindexMotor.setTargetPosition(slotPositionsOuttake[slot]);
         spindexMotor.setPower(MOTOR_SPEED);
-        this.currentMode = SpinDexMode.INTAKE;
+        this.currentMode = SpinDexMode.SHOOT;
 
         while(spindexMotor.isBusy()){
             Thread.sleep(70);

@@ -11,22 +11,29 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class LauncherV2 {
     private final DcMotorEx flywheel;
 
+    private final Servo hood;
     private final Servo kicker;
     private final MecanumDrive mecanumDrive;
     private volatile double targetRpm = 3000;
 
+
+    private double hoodAngle = 0;
+
     public double KICKER_UP = 0.1;
     public double KICKER_DOWN = .5;
 
-    public LauncherV2(HardwareMap hardwareMap, MecanumDrive mecanumDrive) {  // TODO Change to roller outtake instead of gate outtake
+    public LauncherV2(HardwareMap hardwareMap, MecanumDrive mecanumDrive) {
         this.flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
         this.kicker = hardwareMap.get(Servo.class, "kicker");
         this.mecanumDrive = mecanumDrive;
+        this.hood = hardwareMap.get(Servo.class, "hoodServo");
         flywheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         flywheel.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
         flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
         kicker.setDirection(Servo.Direction.REVERSE);
+
+
     }
 
     public double getTargetRpm() {
@@ -37,7 +44,7 @@ public class LauncherV2 {
         this.targetRpm = targetRpm;
     }
 
-    private double getFlywheelRPM() {
+    public double getFlywheelRPM() {
         return (flywheel.getVelocity() * 60.0) / 28.0;
     }
 
@@ -70,6 +77,12 @@ public class LauncherV2 {
     }
 
 
+    public void changeHoodAngle(double hoodPos){
+        hood.setPosition(hoodPos);
+        this.hoodAngle = hoodPos;
+    }
+
+
 
     public void shootOne(Spindex spindex) throws InterruptedException {
         mecanumDrive.freeze();
@@ -87,10 +100,6 @@ public class LauncherV2 {
         setFlywheelRPM(0);
 
     }
-
-
-
-
 
 
     public void onStop() {
