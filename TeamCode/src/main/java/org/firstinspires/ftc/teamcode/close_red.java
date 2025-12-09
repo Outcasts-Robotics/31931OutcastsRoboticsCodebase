@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import com.pedropathing.util.Timer;
 @Autonomous(name = "Pedro Pathing Autonomous", group = "Autonomous")
 @Configurable // Panels
-public class auto2 extends OpMode {
+public class close_red extends OpMode {
 
     private Timer pathTimer, actionTimer, opmodeTimer;
 
