@@ -42,6 +42,21 @@ public class Spindex {
         this.currentSlotOuttake = (slot + 1) % 3;
         spindexMotor.setTargetPosition(slotPositionsIntake[slot]);
         this.currentMode = SpinDexMode.INTAKE;
+        // Control motor speed in TeleOp
+    }
+
+    public void goToSlotIntakeBlocking(int slot) throws InterruptedException {
+        this.currentSlotIntake = slot;
+        this.currentSlotOuttake = (slot + 1) % 3;
+        spindexMotor.setTargetPosition(slotPositionsIntake[slot]);
+        spindexMotor.setPower(MOTOR_SPEED);
+        this.currentMode = SpinDexMode.INTAKE;
+
+        while(spindexMotor.isBusy()){
+            Thread.sleep(70);
+        }
+
+        spindexMotor.setPower(0);
     }
 
     public void goToSlotOuttake(int slot) {
@@ -49,6 +64,20 @@ public class Spindex {
         this.currentSlotIntake = (slot + 2) % 3;
         spindexMotor.setTargetPosition(slotPositionsOuttake[slot]);
         this.currentMode = SpinDexMode.SHOOT;
+    }
+
+    public void goToSlotOuttakeBlocking(int slot) throws InterruptedException {
+        this.currentSlotOuttake = slot;
+        this.currentSlotIntake = (slot + 2) % 3;
+        spindexMotor.setTargetPosition(slotPositionsOuttake[slot]);
+        spindexMotor.setPower(MOTOR_SPEED);
+        this.currentMode = SpinDexMode.INTAKE;
+
+        while(spindexMotor.isBusy()){
+            Thread.sleep(70);
+        }
+
+        spindexMotor.setPower(0);
     }
 
     public void setCurrentMode(SpinDexMode mode) {
