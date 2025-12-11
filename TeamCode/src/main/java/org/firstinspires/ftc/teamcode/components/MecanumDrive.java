@@ -34,7 +34,6 @@ public class MecanumDrive {
         backRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         maxPower = 0.8;
         this.yawInRadProvider = yawInRadProvider;
-
     }
 
     public void update(Gamepad gamepad) {
