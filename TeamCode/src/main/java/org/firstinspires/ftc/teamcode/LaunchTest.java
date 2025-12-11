@@ -51,8 +51,16 @@ public class LaunchTest extends OpMode {
             }
         }
 
+        if(gamepad1.left_bumper){
+            launcher.setTargetRpm(launcher.getTargetRpm() + 50);
+        }
+        if(gamepad1.right_bumper){
+            launcher.setTargetRpm(launcher.getTargetRpm() - 50);
+        }
+
 
         telemetry.addData("Mode", spindex.currentMode);
+
         telemetry.addData("Intake Slot", spindex.getCurrentIntakeSlot());
         telemetry.addData("Outtake Slot", spindex.getCurrentOuttakeSlot());
         telemetry.addData("Motor Speed", launcher.getFlywheelRPM());

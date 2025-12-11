@@ -39,7 +39,23 @@ public class MecanumDrive {
 
     public void update(Gamepad gamepad) {
         boolean relativeToBot = yawInRadProvider == null || gamepad.left_bumper;
-        setDrive(-gamepad.left_stick_y, gamepad.left_stick_x, gamepad.right_stick_x, relativeToBot);
+        if(!gamepad.dpad_up && !gamepad.dpad_right && !gamepad.dpad_left && !gamepad.dpad_down){
+            setDrive(-gamepad.left_stick_y, gamepad.left_stick_x, gamepad.right_stick_x, relativeToBot);
+        }else{
+            if(gamepad.dpad_up){
+              setDrive(.1,0,0,false);
+            }
+            else if(gamepad.dpad_right){
+                setDrive(0,.1,0,false);
+            }
+            else if(gamepad.dpad_left){
+                setDrive(0,-.1,0,false);
+
+            }
+            else if(gamepad.dpad_down){
+                setDrive(-.1, 0,0, false);
+            }
+        }
     }
 
     private void setDrive(double forward, double strafe, double rotate, boolean relativeToBot) {

@@ -37,6 +37,32 @@ public class Spindex {
         colorSensor.enableLed(true);
     }
 
+    public void preLoad(ArtifactColor[] newIndex){
+        if(newIndex.length == 3) {
+            this.index = newIndex;
+        } else{
+            throw new Error("Index is wrong size");
+        }
+    }
+
+    public void goToColorIntake(ArtifactColor color){
+        for(int i = 0; i < index.length; i++){
+            if(index[i] == color){
+                goToSlotIntake(i);
+                break;
+            }
+        }
+    }
+
+    public void goToColorOuttake(ArtifactColor color){
+        for(int i = 0; i < index.length; i++){
+            if(index[i] == color){
+                goToSlotOuttake(i);
+                break;
+            }
+        }
+    }
+
     public void goToSlotIntake(int slot) {
         this.currentSlotIntake = slot;
         this.currentSlotOuttake = (slot + 1) % 3;
@@ -106,6 +132,18 @@ public class Spindex {
 
     public ArtifactColor getColorfromSlot(int slot) {
         return this.index[slot];
+    }
+
+    public boolean isMotorRunning(){
+        return spindexMotor.isBusy();
+    }
+
+    public void stopMotor(){
+        spindexMotor.setPower(0);
+    }
+
+    public void startMotor(){
+        spindexMotor.setPower(MOTOR_SPEED);
     }
 
     public void clearOuttakeSlot() {
