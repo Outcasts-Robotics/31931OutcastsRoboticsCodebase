@@ -28,7 +28,7 @@ public class ShootAuton extends LinearOpMode {
         rearLeft.setPower(-.3);
         rearRight.setPower(-.3);
 
-        Thread.sleep(450);
+        Thread.sleep(1000);
 
         frontLeft.setPower(0);
         frontRight.setPower(0);
