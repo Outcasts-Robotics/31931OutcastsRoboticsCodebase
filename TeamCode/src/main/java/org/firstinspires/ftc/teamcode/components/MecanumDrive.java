@@ -32,7 +32,7 @@ public class MecanumDrive {
         frontRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        maxPower = 0.8;
+        maxPower = 1.0;
         this.yawInRadProvider = yawInRadProvider;
     }
 
