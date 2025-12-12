@@ -56,7 +56,7 @@ public class LauncherV2 {
         mecanumDrive.freeze();
 
         for(int i = 0; i < 3 ; i++){
-            if(spindex.getColorfromSlot(i) != Spindex.ArtifactColor.BLANK){
+            if(spindex.getColorfromSlot(i) != ArtifactColor.BLANK){
                 spindex.goToSlotOuttakeBlocking(i);
                 shootOne(spindex);
             }
@@ -68,7 +68,7 @@ public class LauncherV2 {
         mecanumDrive.freeze();
         int slot = spindex.currentSlotOuttake;
         for(int i = 0; i < 3 ; i++){
-            if(spindex.getColorfromSlot(slot) != Spindex.ArtifactColor.BLANK){
+            if(spindex.getColorfromSlot(slot) != ArtifactColor.BLANK){
                 spindex.goToSlotOuttakeBlocking(slot);
                 shootOne(spindex);
             }

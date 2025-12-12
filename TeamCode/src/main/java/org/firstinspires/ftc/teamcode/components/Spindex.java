@@ -171,12 +171,6 @@ public class Spindex {
         }
     }
 
-    public enum ArtifactColor {
-        PURPLE,
-        GREEN,
-        BLANK
-    }
-
     public enum SpinDexMode {
         INTAKE,
         SHOOT

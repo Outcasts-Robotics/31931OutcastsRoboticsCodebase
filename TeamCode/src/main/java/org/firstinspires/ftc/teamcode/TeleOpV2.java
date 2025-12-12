@@ -4,18 +4,26 @@ import static java.lang.Math.abs;
 
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
-import com.pedropathing.ftc.localization.constants.PinpointConstants;
+import com.pedropathing.ftc.FTCCoordinates;
 import com.pedropathing.ftc.localization.localizers.PinpointLocalizer;
-import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.teamcode.components.ArtifactColor;
 import org.firstinspires.ftc.teamcode.components.Intake;
 import org.firstinspires.ftc.teamcode.components.LauncherV2;
 import org.firstinspires.ftc.teamcode.components.MecanumDrive;
 import org.firstinspires.ftc.teamcode.components.Spindex;
+import org.firstinspires.ftc.teamcode.components.Vision;
+import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@TeleOp
+@TeleOp(name = "TeleOpV2", group = "TeleOp")
 public class TeleOpV2 extends OpMode {
     Spindex spindex;
     LauncherV2 launcher;
@@ -23,17 +31,26 @@ public class TeleOpV2 extends OpMode {
     Intake intake;
     PinpointLocalizer pinpointLocalizer;
     TelemetryManager telemetry = PanelsTelemetry.INSTANCE.getTelemetry();
+    Vision vision = new Vision(hardwareMap);
+
+    Timer poseUpdateTimer = new Timer();
 
 
+    int shootCommands;
     @Override
     public void init() {
-        pinpointLocalizer = new PinpointLocalizer(hardwareMap, new PinpointConstants().hardwareMapName("pinpoint").forwardPodY(-2).strafePodX(-6.5).forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED).strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD));
+        pinpointLocalizer = new PinpointLocalizer(hardwareMap, Constants.localizerConstants);
         spindex = new Spindex(hardwareMap, "spindexMotor", "colorSensor");
         drive = new MecanumDrive(hardwareMap, () -> pinpointLocalizer.getPose().getHeading());
         launcher = new LauncherV2(hardwareMap, drive);
         intake = new Intake(hardwareMap, "intakeMotor");
         telemetry.addData("Status", "Initialized");
         telemetry.update();
+        shootCommands = 0;
+
+        poseUpdateTimer.resetTimer();
+
+
     }
 
     public enum RobotState {
@@ -47,7 +64,28 @@ public class TeleOpV2 extends OpMode {
 
     @Override
     public void loop() {
+
+        vision.update();
         pinpointLocalizer.update();
+        double angularVelocityLimit = Math.PI / 180 * 5;  // not rotating
+        double velocityLimit = 1;  // not moving
+
+        Pose velocity = pinpointLocalizer.getVelocity();
+        double linearSpeed = Math.hypot(velocity.getX(), velocity.getY());
+        double angularSpeed = Math.abs(velocity.getHeading());
+        if (vision.getPositioningTag() != null &&
+                linearSpeed < velocityLimit &&
+                angularSpeed < angularVelocityLimit &&
+                poseUpdateTimer.getElapsedTimeSeconds() > 3) {
+            poseUpdateTimer.resetTimer();
+            Pose3D pose3dFtc = vision.getRobotPoseFtc();
+            Position posFtc = pose3dFtc.getPosition();
+            YawPitchRollAngles yprFtc = pose3dFtc.getOrientation();
+            Pose pose = new Pose(posFtc.x, posFtc.y, yprFtc.getYaw(AngleUnit.RADIANS), FTCCoordinates.INSTANCE);
+            pinpointLocalizer.setPose(pose);
+            telemetry.addLine("Pose updated from vision");
+        }
+
         if(gamepad1.triangle){
             pinpointLocalizer.resetIMU();
         }
@@ -60,10 +98,9 @@ public class TeleOpV2 extends OpMode {
             drive.update(gamepad1);
         }
 
-        int shootCommands = 0;
+
         switch (currentState){
             case INTAKE:
-
                 if(spindex.currentMode == Spindex.SpinDexMode.SHOOT){
                     spindex.setCurrentMode(Spindex.SpinDexMode.INTAKE);
                 }
@@ -96,7 +133,7 @@ public class TeleOpV2 extends OpMode {
                 if(abs(gamepad2.left_stick_y) > .1){
                     intake.spinUptoPower(gamepad2.left_stick_y * intake.MOTOR_POWER);
                 }
-                if(spindex.getColorInIntake() == Spindex.ArtifactColor.BLANK){
+                if(spindex.getColorInIntake() == ArtifactColor.BLANK){
                     spindex.intakeColorDetect();
                 }
                 break;
@@ -134,7 +171,7 @@ public class TeleOpV2 extends OpMode {
                     spindex.startMotor();
                 }
                 if(gamepad2.circle){
-                    spindex.goToSlotOuttake((spindex.getCurrentIntakeSlot() +1 ) % 3);
+                    spindex.goToSlotOuttake((spindex.getCurrentOuttakeSlot() +1 ) % 3);
                     spindex.startMotor();
                 }
                 if(!spindex.isMotorRunning()){
@@ -172,6 +209,7 @@ public class TeleOpV2 extends OpMode {
                         throw new RuntimeException("Wrong Launching Command: " + shootCommands);
                 }
                 currentState = RobotState.PREP_SHOOT;
+                shootCommands = 0;
                 break;
             case PARK:
 
