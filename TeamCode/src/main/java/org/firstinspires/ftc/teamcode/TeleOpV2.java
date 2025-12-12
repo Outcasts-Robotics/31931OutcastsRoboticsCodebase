@@ -2,11 +2,15 @@ package org.firstinspires.ftc.teamcode;
 
 import static java.lang.Math.abs;
 
+import com.bylazar.field.Line;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+import com.pedropathing.follower.Follower;
 import com.pedropathing.ftc.FTCCoordinates;
 import com.pedropathing.ftc.localization.localizers.PinpointLocalizer;
+import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.Path;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -32,6 +36,8 @@ public class TeleOpV2 extends OpMode {
     PinpointLocalizer pinpointLocalizer;
     TelemetryManager telemetry = PanelsTelemetry.INSTANCE.getTelemetry();
     Vision vision = new Vision(hardwareMap);
+    Follower follower;
+    Pose correctPose;
 
     Timer poseUpdateTimer = new Timer();
 
@@ -44,6 +50,9 @@ public class TeleOpV2 extends OpMode {
         drive = new MecanumDrive(hardwareMap, () -> pinpointLocalizer.getPose().getHeading());
         launcher = new LauncherV2(hardwareMap, drive);
         intake = new Intake(hardwareMap, "intakeMotor");
+        follower = Constants.createFollower(hardwareMap);
+        follower.setStartingPose(new Pose(72, 8, Math.toRadians(90)));
+
         telemetry.addData("Status", "Initialized");
         telemetry.update();
         shootCommands = 0;
@@ -67,6 +76,7 @@ public class TeleOpV2 extends OpMode {
 
         vision.update();
         pinpointLocalizer.update();
+        follower.update();
         double angularVelocityLimit = Math.PI / 180 * 5;  // not rotating
         double velocityLimit = 1;  // not moving
 
@@ -83,6 +93,7 @@ public class TeleOpV2 extends OpMode {
             YawPitchRollAngles yprFtc = pose3dFtc.getOrientation();
             Pose pose = new Pose(posFtc.x, posFtc.y, yprFtc.getYaw(AngleUnit.RADIANS), FTCCoordinates.INSTANCE);
             pinpointLocalizer.setPose(pose);
+            follower.setPose(pose);
             telemetry.addLine("Pose updated from vision");
         }
 
@@ -91,10 +102,15 @@ public class TeleOpV2 extends OpMode {
         }
 
 
+
         if(gamepad1.right_bumper){
-            drive.freeze();
+
+            follower.followPath(follower.pathBuilder().addPath(new BezierLine(pinpointLocalizer.getPose(), correctPose)).build());
+        }else{
+            correctPose = follower.getPose();
         }
-        else if(currentState != RobotState.SHOOT){
+
+        if(currentState != RobotState.SHOOT && !gamepad1.right_bumper){
             drive.update(gamepad1);
         }
 

@@ -22,6 +22,9 @@ public class LauncherV2 {
     public double KICKER_UP = 0.1;
     public double KICKER_DOWN = .5;
 
+    public double HOOD_MIN = 0;
+    public double HOOD_MAX = .4;
+
     public LauncherV2(HardwareMap hardwareMap, MecanumDrive mecanumDrive) {
         this.flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
         this.kicker = hardwareMap.get(Servo.class, "kicker");
@@ -104,6 +107,13 @@ public class LauncherV2 {
 
     public void onStop() {
         flywheel.setVelocity(0);
+    }
+
+    public void setHoodAngle(double position){
+        if(position < HOOD_MAX && position > HOOD_MIN){
+            hood.setPosition(position);
+            this.hoodAngle = position;
+        }
     }
 
 
