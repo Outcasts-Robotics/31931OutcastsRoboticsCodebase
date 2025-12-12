@@ -80,17 +80,13 @@ public class LauncherV2 {
     }
 
 
-    public void changeHoodAngle(double hoodPos){
-        hood.setPosition(hoodPos);
-        this.hoodAngle = hoodPos;
-    }
 
 
 
     public void shootOne(Spindex spindex) throws InterruptedException {
         mecanumDrive.freeze();
         setFlywheelRPM(targetRpm);
-        while(abs(getFlywheelRPM() - targetRpm) >= .05){
+        while(abs(getFlywheelRPM() - targetRpm) >= 2){
             Thread.sleep(70);
         }
         kicker.setPosition(KICKER_UP);

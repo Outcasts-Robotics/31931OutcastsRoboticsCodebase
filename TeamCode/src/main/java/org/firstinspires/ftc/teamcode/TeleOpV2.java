@@ -119,6 +119,7 @@ public class TeleOpV2 extends OpMode {
             case INTAKE:
                 if(spindex.currentMode == Spindex.SpinDexMode.SHOOT){
                     spindex.setCurrentMode(Spindex.SpinDexMode.INTAKE);
+                    spindex.startMotor();
                 }
                 if(gamepad1.dpad_down){
                     currentState = RobotState.PARK;
@@ -156,6 +157,7 @@ public class TeleOpV2 extends OpMode {
             case PREP_SHOOT:
                 if(spindex.currentMode == Spindex.SpinDexMode.INTAKE){
                     spindex.setCurrentMode(Spindex.SpinDexMode.SHOOT);
+                    spindex.startMotor();
                 }
 
                 if(gamepad2.right_bumper && !spindex.isMotorRunning()){
