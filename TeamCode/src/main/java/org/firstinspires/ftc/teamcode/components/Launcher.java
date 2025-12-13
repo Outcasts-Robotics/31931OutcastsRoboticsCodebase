@@ -12,8 +12,8 @@ public class Launcher {
     private final Gamepad gamepad;
     private final Servo gate;
     private final MecanumDrive mecanumDrive;
-    private volatile double targetRpm = 3000;
-
+    private volatile double targetRpm = 4500;
+    //no all at once shooting
     public Launcher(HardwareMap hardwareMap, Gamepad gamepad, MecanumDrive mecanumDrive) {
         this.flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
         this.gamepad = gamepad;
@@ -59,7 +59,7 @@ public class Launcher {
     }
 
     private void closeGate() {
-        gate.setPosition(0.8);
+        gate.setPosition(0.05);
     }
 
     public void update() {
