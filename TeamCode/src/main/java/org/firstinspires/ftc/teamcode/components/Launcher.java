@@ -55,11 +55,11 @@ public class Launcher {
     }
 
     private void openGate() {
-        gate.setPosition(0.2);
+        gate.setPosition(0.35);
     }
 
     private void closeGate() {
-        gate.setPosition(0.4);
+        gate.setPosition(0.2);
     }
 
     public void update() {
