@@ -32,7 +32,7 @@ public class TeleOpV2 extends OpMode {
     Spindex spindex;
     LauncherV2 launcher;
     MecanumDrive drive;
-    Intake intake;
+    // Intake intake;
     PinpointLocalizer pinpointLocalizer;
     TelemetryManager telemetry = PanelsTelemetry.INSTANCE.getTelemetry();
     Vision vision = new Vision(hardwareMap);
@@ -49,7 +49,7 @@ public class TeleOpV2 extends OpMode {
         spindex = new Spindex(hardwareMap, "spindexMotor", "colorSensor");
         drive = new MecanumDrive(hardwareMap, () -> pinpointLocalizer.getPose().getHeading());
         launcher = new LauncherV2(hardwareMap, drive);
-        intake = new Intake(hardwareMap, "intakeMotor");
+        // intake = new Intake(hardwareMap, "intakeMotor");
         follower = Constants.createFollower(hardwareMap);
         follower.setStartingPose(new Pose(72, 8, Math.toRadians(90)));
 
@@ -74,7 +74,7 @@ public class TeleOpV2 extends OpMode {
     @Override
     public void loop() {
 
-        vision.update();
+        //vision.update();
         pinpointLocalizer.update();
         follower.update();
         double angularVelocityLimit = Math.PI / 180 * 5;  // not rotating
@@ -148,7 +148,7 @@ public class TeleOpV2 extends OpMode {
                     spindex.stopMotor();
                 }
                 if(abs(gamepad2.left_stick_y) > .1){
-                    intake.spinUptoPower(gamepad2.left_stick_y * intake.MOTOR_POWER);
+                    // intake.spinUptoPower(gamepad2.left_stick_y * intake.MOTOR_POWER);
                 }
                 if(spindex.getColorInIntake() == ArtifactColor.BLANK){
                     spindex.intakeColorDetect();
