@@ -39,7 +39,7 @@ public class Constants {
             .distanceUnit(DistanceUnit.INCH);
 
     public static PathConstraints pathConstraints = new PathConstraints(.995, 100, .6, .9);
-    static FollowerConstants followerConstants = new FollowerConstants()
+    public static FollowerConstants followerConstants = new FollowerConstants()
             .mass(7.5)
             .forwardZeroPowerAcceleration(-39.12102161911619)
             .lateralZeroPowerAcceleration(-50.15222548957224)
