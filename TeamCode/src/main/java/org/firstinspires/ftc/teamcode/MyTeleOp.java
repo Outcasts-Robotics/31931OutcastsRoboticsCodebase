@@ -33,7 +33,7 @@ public class MyTeleOp extends OpMode {
     public void loop() {
         pinpointLocalizer.update();
         mecanumDrive.update(gamepad1);
-        if (gamepad1.rightBumperWasPressed()) {
+        if (gamepad1.optionsWasPressed()) {
             pinpointLocalizer.resetIMU();
         }
         panelsTelemetry.update(telemetry);
