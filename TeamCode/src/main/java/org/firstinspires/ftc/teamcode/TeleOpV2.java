@@ -155,25 +155,36 @@ public class TeleOpV2 extends OpMode {
                 }
                 break;
             case PREP_SHOOT:
-                if(spindex.currentMode == Spindex.SpinDexMode.INTAKE){
-                    spindex.setCurrentMode(Spindex.SpinDexMode.SHOOT);
-                    spindex.startMotor();
+                if (spindex == null) {
+                    telemetry.addData("Error", "Spindex not initialized! Check hardware configuration.");
+                    telemetry.update();
+                    return;
                 }
 
-                if(gamepad2.right_bumper && !spindex.isMotorRunning()){
-                    currentState = RobotState.SHOOT;
-                    shootCommands = 1;
-                    break;
-                }
-                if(gamepad2.dpad_left && !spindex.isMotorRunning()){
-                    currentState = RobotState.SHOOT;
-                    shootCommands = 2;
-                    break;
-                }
-                if(gamepad2.dpad_right && !spindex.isMotorRunning()){
-                    currentState = RobotState.SHOOT;
-                    shootCommands = 3;
-                    break;
+                try {
+                    if (spindex.currentMode == Spindex.SpinDexMode.INTAKE) {
+                        spindex.setCurrentMode(Spindex.SpinDexMode.SHOOT);
+                        spindex.startMotor();
+                    }
+
+                    if (gamepad2.right_bumper && !spindex.isMotorRunning()) {
+                        currentState = RobotState.SHOOT;
+                        shootCommands = 1;
+                        break;
+                    }
+                    if (gamepad2.dpad_left && !spindex.isMotorRunning()) {
+                        currentState = RobotState.SHOOT;
+                        shootCommands = 2;
+                        break;
+                    }
+                    if (gamepad2.dpad_right && !spindex.isMotorRunning()) {
+                        currentState = RobotState.SHOOT;
+                        shootCommands = 3;
+                        break;
+                    }
+                } catch (Exception e) {
+                    telemetry.addData("Error", "Exception in spindex operation: " + e.getMessage());
+                    telemetry.update();
                 }
 
                 if(gamepad2.triangle){
