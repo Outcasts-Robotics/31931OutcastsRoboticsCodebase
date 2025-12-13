@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import org.firstinspires.ftc.teamcode.components.Launcher;
 
 @Autonomous
-public class ShootAuton extends LinearOpMode {
+public class AutoShootRed extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         waitForStart();
@@ -28,7 +28,7 @@ public class ShootAuton extends LinearOpMode {
         rearLeft.setPower(-.3);
         rearRight.setPower(-.3);
 
-        Thread.sleep(1000);
+        Thread.sleep(600);
 
         frontLeft.setPower(0);
         frontRight.setPower(0);
@@ -49,5 +49,16 @@ public class ShootAuton extends LinearOpMode {
         telemetry.addLine("Stopped launcher");
         telemetry.update();
 
+        frontLeft.setPower(-0.3);
+        frontRight.setPower(0.3);
+        rearLeft.setPower(0.3);
+        rearRight.setPower(-0.3);
+
+        Thread.sleep(1000);
+
+        frontLeft.setPower(0);
+        frontRight.setPower(0);
+        rearLeft.setPower(0);
+        rearRight.setPower(0);
     }
 }

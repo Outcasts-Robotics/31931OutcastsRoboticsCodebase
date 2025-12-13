@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @Autonomous
-public class MoveOnlyAutonRed extends LinearOpMode {
+public class FarMove extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         waitForStart();
@@ -14,18 +14,25 @@ public class MoveOnlyAutonRed extends LinearOpMode {
         final DcMotor frontRight = hardwareMap.get(DcMotor.class, "fr");
         final DcMotor rearRight = hardwareMap.get(DcMotor.class, "rr");
         final DcMotor rearLeft = hardwareMap.get(DcMotor.class, "rl");
+        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontRight.setDirection(DcMotorSimple.Direction.FORWARD);
+        rearLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        rearRight.setDirection(DcMotorSimple.Direction.FORWARD);
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rearLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rearRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         rearLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        Thread.sleep(20000);
 
-        frontLeft.setPower(-.3);
+        frontLeft.setPower(0.3);
         frontRight.setPower(.3);
         rearLeft.setPower(.3);
-        rearRight.setPower(-.3);
+        rearRight.setPower(.3);
 
-        Thread.sleep(2000);
+        Thread.sleep(750);
 
         frontLeft.setPower(0);
         frontRight.setPower(0);
