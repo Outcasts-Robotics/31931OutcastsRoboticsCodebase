@@ -16,7 +16,7 @@ public class ShootAuton extends LinearOpMode {
         final DcMotor frontRight = hardwareMap.get(DcMotor.class, "fr");
         final DcMotor rearRight = hardwareMap.get(DcMotor.class, "rr");
         final DcMotor rearLeft = hardwareMap.get(DcMotor.class, "rl");
-        final Launcher launcher = new Launcher(hardwareMap, gamepad1);
+        final Launcher launcher = new Launcher(hardwareMap, gamepad1, null);
 
         launcher.init();
 
@@ -28,7 +28,7 @@ public class ShootAuton extends LinearOpMode {
         rearLeft.setPower(-.3);
         rearRight.setPower(-.3);
 
-        Thread.sleep(450);
+        Thread.sleep(1000);
 
         frontLeft.setPower(0);
         frontRight.setPower(0);
