@@ -57,7 +57,7 @@ public class Launcher {
     }
 
     private void closeGate() {
-        gate.setPosition(0.4);
+        gate.setPosition(0.8);
     }
 
     public void update() {

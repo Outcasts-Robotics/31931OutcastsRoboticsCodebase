@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 
 @TeleOp
-public class ServoGateTuner extends OpMode {
+public class  ServoGateTuner extends OpMode {
     double pos = 0.2;
     private Servo gate;
 
