@@ -84,7 +84,7 @@ public class Launcher {
         }
         openGate();
         try {
-            Thread.sleep(340);
+            Thread.sleep(255); //340 too high,170 too low 255 good?
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
