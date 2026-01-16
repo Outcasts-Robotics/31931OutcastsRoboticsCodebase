@@ -11,14 +11,15 @@ public class Launcher {
     private final DcMotorEx flywheel;
     private final Gamepad gamepad;
     private final Servo gate;
-    private final MecanumDrive mecanumDrive;
+    private volatile Thread launchThread;
+
     private volatile double targetRpm = 3000;
 
-    public Launcher(HardwareMap hardwareMap, Gamepad gamepad, MecanumDrive mecanumDrive) {
+    public Launcher(HardwareMap hardwareMap, Gamepad gamepad) {
+        this.launchThread = null;
         this.flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
         this.gamepad = gamepad;
         this.gate = hardwareMap.get(Servo.class, "gateServo");
-        this.mecanumDrive = mecanumDrive;
     }
 
     public double getTargetRpm() {
@@ -64,36 +65,48 @@ public class Launcher {
 
     public void update() {
         if (gamepad.xWasPressed()) {
-            if (mecanumDrive != null)
-                mecanumDrive.freeze();
+
             launch();
         }
     }
 
     public void onStop() {
+        // Interrupt the launch thread if it's running
+        if (launchThread != null && launchThread.isAlive()) {
+            launchThread.interrupt();
+            try {
+                launchThread.join(500); // Wait up to 500ms for the thread to finish
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        
         flywheel.setVelocity(0);
         closeGate();
     }
 
     public void launch() {
-        setFlywheelRPM(targetRpm);
-        try {
-            waitForFlywheelRPM(targetRpm);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        // If a launch is already in progress, don't start another one
+        if (launchThread != null && launchThread.isAlive()) {
+            return;
         }
-        openGate();
-        try {
-            Thread.sleep(340);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        closeGate();
-        try {
-            Thread.sleep(340);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        setFlywheelRPM(0);
+        
+        launchThread = new Thread(() -> {
+            try {
+                setFlywheelRPM(targetRpm);
+                waitForFlywheelRPM(targetRpm);
+                openGate();
+                Thread.sleep(340);
+                closeGate();
+                Thread.sleep(340);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } finally {
+                // Clean up
+                closeGate();
+            }
+        }, "Launcher Thread");
+        
+        launchThread.start();
     }
 }

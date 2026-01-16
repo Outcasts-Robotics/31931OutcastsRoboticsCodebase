@@ -59,6 +59,8 @@ public class TeleOpV2 extends OpMode {
 
         poseUpdateTimer.resetTimer();
 
+        System.out.println(vision);
+
 
     }
 

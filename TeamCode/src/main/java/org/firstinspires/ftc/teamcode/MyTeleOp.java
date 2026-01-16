@@ -34,7 +34,7 @@ public class MyTeleOp extends OpMode {
         follower = new FollowerBuilder(Constants.followerConstants, hardwareMap).build();
         follower.setStartingPose(new Pose(72, 8, 0));
         mecanumDrive = new MecanumDrive(hardwareMap, () -> pinpointLocalizer.getPose().getHeading());
-        launcher = new Launcher(hardwareMap, gamepad1, mecanumDrive);
+        launcher = new Launcher(hardwareMap, gamepad1);
         launcher.init();
     }
 
