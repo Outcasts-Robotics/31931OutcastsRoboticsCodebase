@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class Launcher {
     private final DcMotorEx flywheel;
+    private final DcMotorEx flywheel2;
     private final Gamepad gamepad;
     private final Servo gate;
     private volatile Thread launchThread;
@@ -18,6 +19,7 @@ public class Launcher {
     public Launcher(HardwareMap hardwareMap, Gamepad gamepad) {
         this.launchThread = null;
         this.flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
+        this.flywheel2 = hardwareMap.get(DcMotorEx.class, "flywheel2");
         this.gamepad = gamepad;
         this.gate = hardwareMap.get(Servo.class, "gateServo");
     }
@@ -44,6 +46,7 @@ public class Launcher {
 
     private void setFlywheelRPM(double rpm) {
         flywheel.setVelocity((rpm * 28.0) / 60.0);
+        flywheel2.setVelocity((rpm * 28.0) / 60.0);
     }
 
     private void waitForFlywheelRPM(double targetRPM) throws InterruptedException {
@@ -82,6 +85,7 @@ public class Launcher {
         }
         
         flywheel.setVelocity(0);
+        flywheel2.setVelocity(0);
         closeGate();
     }
 
