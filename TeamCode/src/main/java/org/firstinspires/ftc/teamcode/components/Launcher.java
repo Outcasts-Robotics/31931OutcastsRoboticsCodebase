@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class Launcher {
     private final DcMotorEx flywheel;
+    private final DcMotorEx flywheel2;
+
     private final Gamepad gamepad;
     private final Servo gate;
     private final MecanumDrive mecanumDrive;
@@ -16,6 +18,7 @@ public class Launcher {
     //no all at once shooting
     public Launcher(HardwareMap hardwareMap, Gamepad gamepad, MecanumDrive mecanumDrive) {
         this.flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
+        this.flywheel2 = hardwareMap.get(DcMotorEx.class, "flywheel2");
         this.gamepad = gamepad;
         this.gate = hardwareMap.get(Servo.class, "gateServo");
         this.mecanumDrive = mecanumDrive;
@@ -32,6 +35,9 @@ public class Launcher {
     public void init() {
         flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         flywheel.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+        flywheel2.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        flywheel2.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+        flywheel2.setDirection(DcMotorSimple.Direction.REVERSE);
         flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
         gate.setDirection(Servo.Direction.REVERSE);
         closeGate();
@@ -43,8 +49,9 @@ public class Launcher {
 
     private void setFlywheelRPM(double rpm) {
         flywheel.setVelocity((rpm * 28.0) / 60.0);
+        flywheel2.setVelocity((rpm * 28.0) / 60.0);
     }
-git
+
     private void waitForFlywheelRPM(double targetRPM) throws InterruptedException {
         ElapsedTime timer = new ElapsedTime();
         timer.reset();
@@ -55,22 +62,22 @@ git
     }
 
     private void openGate() {
-        gate.setPosition(0.35);
+        gate.setPosition(0.15);
     }
 
     private void closeGate() {
-        gate.setPosition(0.2);
+        gate.setPosition(-.05);
     }
 
     public void update() {
         if (gamepad.xWasPressed()) {
-            if (mecanumDrive != null)
-                mecanumDrive.freeze();
+            mecanumDrive.freeze();
             launch();
         }
     }
 
     public void onStop() {
+        flywheel2.setVelocity(0);
         flywheel.setVelocity(0);
         closeGate();
     }

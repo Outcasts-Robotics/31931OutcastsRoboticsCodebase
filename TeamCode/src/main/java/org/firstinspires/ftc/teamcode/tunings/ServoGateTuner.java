@@ -13,12 +13,11 @@ public class  ServoGateTuner extends OpMode {
     public void init() {
         gate = hardwareMap.get(Servo.class, "gateServo");
         gate.setDirection(Servo.Direction.REVERSE);
-        gate.setPosition(0.2);
+        gate.setPosition(.2);
     }
 
     @Override
     public void loop() {
-        telemetry.addData("pos", pos);
         if (gamepad1.leftBumperWasPressed()) {
             pos -= 0.05;
             gate.setPosition(pos);
@@ -26,6 +25,9 @@ public class  ServoGateTuner extends OpMode {
         if (gamepad1.rightBumperWasPressed()) {
             pos += 0.05;
             gate.setPosition(pos);
+
         }
+        telemetry.addData("pos", pos);
+        telemetry.update();
     }
 }

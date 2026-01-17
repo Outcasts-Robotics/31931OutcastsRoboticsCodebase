@@ -28,7 +28,7 @@ public class AutoShootBlue extends LinearOpMode {
         rearLeft.setPower(-.3);
         rearRight.setPower(-.3);
 
-        Thread.sleep(300);
+        Thread.sleep(1300);
 
         frontLeft.setPower(0);
         frontRight.setPower(0);
@@ -49,16 +49,6 @@ public class AutoShootBlue extends LinearOpMode {
         telemetry.addLine("Stopped launcher");
         telemetry.update();
 
-        frontLeft.setPower(0.3);
-        frontRight.setPower(-0.3);
-        rearLeft.setPower(-0.3);
-        rearRight.setPower(0.3);
 
-        Thread.sleep(1000);
-
-        frontLeft.setPower(0);
-        frontRight.setPower(0);
-        rearLeft.setPower(0);
-        rearRight.setPower(0);
     }
 }

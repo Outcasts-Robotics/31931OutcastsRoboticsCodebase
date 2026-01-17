@@ -32,7 +32,7 @@ public class FarMove extends LinearOpMode {
         rearLeft.setPower(.3);
         rearRight.setPower(.3);
 
-        Thread.sleep(750);
+        Thread.sleep(1500);
 
         frontLeft.setPower(0);
         frontRight.setPower(0);
