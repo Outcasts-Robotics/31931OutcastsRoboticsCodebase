@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.components;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -22,6 +24,7 @@ public class Launcher {
         this.gamepad = gamepad;
         this.gate = hardwareMap.get(Servo.class, "gateServo");
         this.mecanumDrive = mecanumDrive;
+
     }
 
     public double getTargetRpm() {
@@ -40,6 +43,7 @@ public class Launcher {
         flywheel2.setDirection(DcMotorSimple.Direction.REVERSE);
         flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
         gate.setDirection(Servo.Direction.REVERSE);
+        // this.flywheel.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(0,0,0,0));
         closeGate();
     }
 
