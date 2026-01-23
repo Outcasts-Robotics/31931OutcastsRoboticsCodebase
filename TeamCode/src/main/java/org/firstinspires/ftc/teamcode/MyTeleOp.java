@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.components.Launcher;
 import org.firstinspires.ftc.teamcode.components.MecanumDrive;
+import org.firstinspires.ftc.teamcode.pedroPathing.LauncherConstants;
 
 
 @TeleOp(name = "MyTeleOp", group = "TeleOp")
@@ -25,7 +26,7 @@ public class MyTeleOp extends OpMode {
         pinpointLocalizer = new PinpointLocalizer(hardwareMap, new PinpointConstants().hardwareMapName("pinpoint").forwardPodY(-2).strafePodX(-6.5).forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED).strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD));
         pinpointLocalizer.resetIMU();
         mecanumDrive = new MecanumDrive(hardwareMap, () -> pinpointLocalizer.getPose().getHeading());
-        launcher = new Launcher(hardwareMap, gamepad1, mecanumDrive);
+        launcher = new Launcher(hardwareMap, gamepad1, mecanumDrive, panelsTelemetry);
         launcher.init();
     }
 
@@ -36,8 +37,14 @@ public class MyTeleOp extends OpMode {
         if (gamepad1.optionsWasPressed()) {
             pinpointLocalizer.resetIMU();
         }
+        panelsTelemetry.addData("Target RPM", launcher.getTargetRpm());
+        panelsTelemetry.addData("Current RPM", launcher.getFlywheelRPM());
+        panelsTelemetry.addData("Pose", pinpointLocalizer.getPose());
+
         panelsTelemetry.update(telemetry);
         launcher.update();
+        panelsTelemetry.update();
+
     }
 
     @Override

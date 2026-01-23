@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -12,11 +14,13 @@ public class AutoShootRed extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         waitForStart();
+
+        TelemetryManager panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         final DcMotor frontLeft = hardwareMap.get(DcMotor.class, "fl");
         final DcMotor frontRight = hardwareMap.get(DcMotor.class, "fr");
         final DcMotor rearRight = hardwareMap.get(DcMotor.class, "rr");
         final DcMotor rearLeft = hardwareMap.get(DcMotor.class, "rl");
-        final Launcher launcher = new Launcher(hardwareMap, gamepad1, null);
+        final Launcher launcher = new Launcher(hardwareMap, gamepad1, null, panelsTelemetry);
 
         launcher.init();
 
@@ -38,11 +42,8 @@ public class AutoShootRed extends LinearOpMode {
         telemetry.addLine("Launching...");
         telemetry.update();
 
-        for (int i = 0; i < 4; i++) {
-            launcher.launch();
-            Thread.sleep(3000);
-        }
-
+        launcher.launch();
+        Thread.sleep(300);
         telemetry.addLine("Stopping launcher");
         telemetry.update();
         launcher.onStop();

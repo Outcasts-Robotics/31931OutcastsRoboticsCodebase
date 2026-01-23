@@ -1,13 +1,17 @@
 package org.firstinspires.ftc.teamcode.components;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
+import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import java.util.function.DoubleConsumer;
 
 public class Launcher {
     private final DcMotorEx flywheel;
@@ -16,23 +20,36 @@ public class Launcher {
     private final Gamepad gamepad;
     private final Servo gate;
     private final MecanumDrive mecanumDrive;
-    private volatile double targetRpm = 4500;
+    private final PIDController pidController;
+    private final DoubleConsumer powerSetter;
+    private final TelemetryManager panelsTelemetry;
+    private volatile double targetRpm = 0;
+    private double shootRpm = 5000;
+
+
     //no all at once shooting
-    public Launcher(HardwareMap hardwareMap, Gamepad gamepad, MecanumDrive mecanumDrive) {
+    public Launcher(HardwareMap hardwareMap, Gamepad gamepad, MecanumDrive mecanumDrive, TelemetryManager panelsTelemetry) {
         this.flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
         this.flywheel2 = hardwareMap.get(DcMotorEx.class, "flywheel2");
         this.gamepad = gamepad;
         this.gate = hardwareMap.get(Servo.class, "gateServo");
         this.mecanumDrive = mecanumDrive;
+        this.panelsTelemetry = panelsTelemetry;
+        this.powerSetter = v -> {
+            flywheel.setPower(max(-1, min(v, 1)));
+            flywheel2.setPower(max(-1, min(v, 1)));
+        };
 
+        this.pidController = new PIDController(this::getFlywheelRPM, this.powerSetter, panelsTelemetry);
     }
 
     public double getTargetRpm() {
         return targetRpm;
     }
 
-    public void setTargetRpm(double targetRpm) {
-        this.targetRpm = targetRpm;
+    private void setTargetRpm(double rpm) {
+        targetRpm = rpm;
+        pidController.setTarget(targetRpm);
     }
 
     public void init() {
@@ -43,25 +60,24 @@ public class Launcher {
         flywheel2.setDirection(DcMotorSimple.Direction.REVERSE);
         flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
         gate.setDirection(Servo.Direction.REVERSE);
-        // this.flywheel.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(0,0,0,0));
         closeGate();
+        pidController.start();
     }
 
-    private double getFlywheelRPM() {
+    public double getFlywheelRPM() {
         return (flywheel.getVelocity() * 60.0) / 28.0;
     }
 
-    private void setFlywheelRPM(double rpm) {
-        flywheel.setVelocity((rpm * 28.0) / 60.0);
-        flywheel2.setVelocity((rpm * 28.0) / 60.0);
-    }
-
-    private void waitForFlywheelRPM(double targetRPM) throws InterruptedException {
+    private void waitForFlywheelRPM(double targetRPM) {
         ElapsedTime timer = new ElapsedTime();
         timer.reset();
-        while (Math.abs(getFlywheelRPM() - targetRPM) > 100) {
+        while (Math.abs(getFlywheelRPM() - targetRPM) > 50) {
             if (timer.milliseconds() > 2500) break;
-            Thread.sleep(10);
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -81,30 +97,26 @@ public class Launcher {
     }
 
     public void onStop() {
+        pidController.stop();
         flywheel2.setVelocity(0);
         flywheel.setVelocity(0);
         closeGate();
     }
 
     public void launch() {
-        setFlywheelRPM(targetRpm);
-        try {
-            waitForFlywheelRPM(targetRpm);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        setTargetRpm(shootRpm);
+        waitForFlywheelRPM(targetRpm);
         openGate();
         try {
-            Thread.sleep(1000); //340 too high,170 too low 255 good?
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
         closeGate();
-        try {
-            Thread.sleep(340);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-        setFlywheelRPM(0);
+        setTargetRpm(0);
+    }
+
+    public void changeShootRPM(double rpm) {
+        this.shootRpm = rpm;
     }
 }
