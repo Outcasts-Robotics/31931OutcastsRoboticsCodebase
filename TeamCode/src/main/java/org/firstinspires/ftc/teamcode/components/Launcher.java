@@ -19,7 +19,6 @@ public class Launcher {
     private final DcMotorEx flywheel2;
     private final Gamepad gamepad;
     private final Servo gate;
-    private final MecanumDrive mecanumDrive;
     private final PIDController pidController;
     private final DoubleConsumer powerSetter;
 
@@ -31,14 +30,12 @@ public class Launcher {
 
     public Launcher(HardwareMap hardwareMap,
                     Gamepad gamepad,
-                    MecanumDrive mecanumDrive,
                     TelemetryManager panelsTelemetry) {
 
         this.flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
         this.flywheel2 = hardwareMap.get(DcMotorEx.class, "flywheel2");
         this.gamepad = gamepad;
         this.gate = hardwareMap.get(Servo.class, "gateServo");
-        this.mecanumDrive = mecanumDrive;
 
         this.powerSetter = v -> {
             flywheel.setPower(max(-1, min(v, 1)));
@@ -67,7 +64,7 @@ public class Launcher {
 
     public void update() {
         if (gamepad.xWasPressed()) {
-            mecanumDrive.freeze();
+
             launch();
         }
     }
@@ -81,7 +78,7 @@ public class Launcher {
             try {
                 setTargetRpm(shootRpm);
 
-                // Wait for flywheel RPM
+
                 ElapsedTime timer = new ElapsedTime();
                 timer.reset();
 

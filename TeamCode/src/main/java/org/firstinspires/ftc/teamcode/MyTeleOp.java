@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
 
+import android.annotation.SuppressLint;
+
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.ftc.localization.constants.PinpointConstants;
@@ -11,7 +13,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.components.Launcher;
 import org.firstinspires.ftc.teamcode.components.MecanumDrive;
-import org.firstinspires.ftc.teamcode.pedroPathing.LauncherConstants;
 
 
 @TeleOp(name = "MyTeleOp", group = "TeleOp")
@@ -26,7 +27,7 @@ public class MyTeleOp extends OpMode {
         pinpointLocalizer = new PinpointLocalizer(hardwareMap, new PinpointConstants().hardwareMapName("pinpoint").forwardPodY(-2).strafePodX(-6.5).forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED).strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD));
         pinpointLocalizer.resetIMU();
         mecanumDrive = new MecanumDrive(hardwareMap, () -> pinpointLocalizer.getPose().getHeading());
-        launcher = new Launcher(hardwareMap, gamepad1, mecanumDrive, panelsTelemetry);
+        launcher = new Launcher(hardwareMap, gamepad1, panelsTelemetry);
         launcher.init();
     }
 
@@ -47,6 +48,7 @@ public class MyTeleOp extends OpMode {
 
     }
 
+    @SuppressLint("NewApi")
     @Override
     public void stop() {
         launcher.onStop();

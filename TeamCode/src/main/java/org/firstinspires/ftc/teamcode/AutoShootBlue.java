@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.annotation.SuppressLint;
+
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -11,6 +13,7 @@ import org.firstinspires.ftc.teamcode.components.Launcher;
 
 @Autonomous
 public class AutoShootBlue extends LinearOpMode {
+    @SuppressLint("NewApi")
     @Override
     public void runOpMode() throws InterruptedException {
         waitForStart();
@@ -19,7 +22,7 @@ public class AutoShootBlue extends LinearOpMode {
         final DcMotor frontRight = hardwareMap.get(DcMotor.class, "fr");
         final DcMotor rearRight = hardwareMap.get(DcMotor.class, "rr");
         final DcMotor rearLeft = hardwareMap.get(DcMotor.class, "rl");
-        final Launcher launcher = new Launcher(hardwareMap, gamepad1, null, panelsTelemetry);
+        final Launcher launcher = new Launcher(hardwareMap, gamepad1, panelsTelemetry);
 
         launcher.init();
 
