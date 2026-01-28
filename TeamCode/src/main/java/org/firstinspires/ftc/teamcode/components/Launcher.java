@@ -71,7 +71,7 @@ public class Launcher {
 
 
     public void launch() {
-        // Prevent double-launching
+
         if (launchThread != null && launchThread.isAlive()) return;
 
         launchThread = new Thread(() -> {
@@ -82,12 +82,14 @@ public class Launcher {
                 ElapsedTime timer = new ElapsedTime();
                 timer.reset();
 
+                long start = System.currentTimeMillis();
                 while (!Thread.currentThread().isInterrupted()
-                        && Math.abs(getFlywheelRPM() - shootRpm) > 50) {
-
-                    if (timer.milliseconds() > 2500) break;
-                    Thread.sleep(10);
+                        && Math.abs(getFlywheelRPM() - shootRpm) > 50
+                        && System.currentTimeMillis() - start < 2500) {
+                    // do nothing, just check periodically
+                    Thread.yield(); // optional
                 }
+
 
                 if (Thread.currentThread().isInterrupted()) return;
 
