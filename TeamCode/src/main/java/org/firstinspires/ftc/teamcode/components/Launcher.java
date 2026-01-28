@@ -25,7 +25,7 @@ public class Launcher {
     private volatile double targetRpm = 0;
     private final double shootRpm = 5000;
 
-    // 🔹 NEW: launcher worker thread
+    
     private Thread launchThread;
 
     public Launcher(HardwareMap hardwareMap,
