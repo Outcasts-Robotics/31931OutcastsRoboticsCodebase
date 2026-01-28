@@ -23,8 +23,7 @@ public class Launcher {
     private final DoubleConsumer powerSetter;
 
     private volatile double targetRpm = 0;
-    private final double shootRpm = 5000;
-
+    private final double shootRpm = 5000.0;
 
     private Thread launchThread;
 
@@ -86,16 +85,16 @@ public class Launcher {
                 while (!Thread.currentThread().isInterrupted()
                         && Math.abs(getFlywheelRPM() - shootRpm) > 50
                         && System.currentTimeMillis() - start < 2500) {
-                    // do nothing, just check periodically
-                    Thread.yield(); // optional
+
+                    Thread.yield();
                 }
 
 
                 if (Thread.currentThread().isInterrupted()) return;
 
-                // Fire
+
                 openGate();
-                Thread.sleep(1000);
+                Thread.sleep(1000L);
                 closeGate();
 
                 setTargetRpm(0);
