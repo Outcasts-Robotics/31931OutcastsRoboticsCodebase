@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.bylazar.telemetry.TelemetryManager;
 
 public class Launcher {
 
@@ -15,6 +16,7 @@ public class Launcher {
     private final DcMotorEx flywheel2;
     private final Gamepad gamepad;
     private final Servo gate;
+    private final PIDController pidController;
 
     private double targetRpm = 0;
 
@@ -23,22 +25,13 @@ public class Launcher {
     private static final long SPINUP_TIMEOUT_MS = 2500;
     private static final long GATE_OPEN_MS = 1000;
 
-    private static final double kP = 0.00035;
-    private static final double kI = 0.0000008;
-    private static final double kD = 0.00002;
-
-    private double integral = 0;
-    private double lastError = 0;
-    private long lastPidTime = 0;
-
     public void launch() {
-        // Set target RPM and reset PID
+        // Set target RPM
         setTargetRpm(SHOOT_RPM);
         
         // Wait for flywheel to reach target speed
         long startTime = System.currentTimeMillis();
         while (System.currentTimeMillis() - startTime < SPINUP_TIMEOUT_MS) {
-            runPid(System.currentTimeMillis());
             if (Math.abs(getFlywheelRPM() - SHOOT_RPM) <= RPM_TOLERANCE) {
                 break;
             }
@@ -64,8 +57,6 @@ public class Launcher {
         // Close gate and stop flywheel
         closeGate();
         setTargetRpm(0);
-        flywheel.setPower(0);
-        flywheel2.setPower(0);
     }
 
     private enum State {
@@ -77,11 +68,22 @@ public class Launcher {
     private State state = State.IDLE;
     private long stateStartTime = 0;
 
-    public Launcher(HardwareMap hardwareMap, Gamepad gamepad) {
+    public Launcher(HardwareMap hardwareMap, Gamepad gamepad, TelemetryManager telemetryManager) {
         this.flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
         this.flywheel2 = hardwareMap.get(DcMotorEx.class, "flywheel2");
         this.gamepad = gamepad;
         this.gate = hardwareMap.get(Servo.class, "gateServo");
+        
+        // Initialize PIDController with current state supplier and power setter
+        this.pidController = new PIDController(
+            this::getFlywheelRPM,
+            power -> {
+                double clampedPower = Math.max(-1, Math.min(1, power));
+                flywheel.setPower(clampedPower);
+                flywheel2.setPower(clampedPower);
+            },
+            telemetryManager
+        );
     }
 
     public void init() {
@@ -97,7 +99,8 @@ public class Launcher {
         gate.setDirection(Servo.Direction.REVERSE);
         closeGate();
 
-        lastPidTime = System.currentTimeMillis();
+        // Start the PID controller thread
+        pidController.start();
     }
 
     public void update() {
@@ -107,8 +110,6 @@ public class Launcher {
             setTargetRpm(SHOOT_RPM);
             transition(State.SPINUP);
         }
-
-        runPid(now);
 
         switch (state) {
             case IDLE:
@@ -134,33 +135,14 @@ public class Launcher {
         }
     }
 
-    private void runPid(long now) {
-        double dt = (now - lastPidTime) / 1000.0;
-        lastPidTime = now;
-
-        if (dt <= 0) return;
-
-        double error = targetRpm - getFlywheelRPM();
-        integral += error * dt;
-        double derivative = (error - lastError) / dt;
-        lastError = error;
-
-        double output = kP * error + kI * integral + kD * derivative;
-        output = max(-1, min(output, 1));
-
-        flywheel.setPower(output);
-        flywheel2.setPower(output);
+    private void setTargetRpm(double rpm) {
+        targetRpm = rpm;
+        pidController.setTarget(rpm);
     }
 
     private void transition(State newState) {
         state = newState;
         stateStartTime = System.currentTimeMillis();
-    }
-
-    private void setTargetRpm(double rpm) {
-        targetRpm = rpm;
-        integral = 0;
-        lastError = 0;
     }
 
     public double getFlywheelRPM() {
@@ -180,6 +162,7 @@ public class Launcher {
     public void onStop() {
         state = State.IDLE;
         setTargetRpm(0);
+        pidController.stop();
         flywheel.setPower(0);
         flywheel2.setPower(0);
         closeGate();

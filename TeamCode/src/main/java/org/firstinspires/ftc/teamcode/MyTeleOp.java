@@ -10,6 +10,7 @@ import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.components.Launcher;
 import org.firstinspires.ftc.teamcode.components.MecanumDrive;
@@ -20,6 +21,7 @@ public class MyTeleOp extends OpMode {
     private MecanumDrive mecanumDrive;
     private PinpointLocalizer pinpointLocalizer;
     private Launcher launcher;
+    private Servo light;
 
     @Override
     public void init() {
@@ -35,8 +37,10 @@ public class MyTeleOp extends OpMode {
         pinpointLocalizer.resetIMU();
         mecanumDrive = new MecanumDrive(hardwareMap, () -> pinpointLocalizer.getPose().getHeading());
         resetDriveMotors();
-        launcher = new Launcher(hardwareMap, gamepad1);
+        launcher = new Launcher(hardwareMap, gamepad1, panelsTelemetry);
         launcher.init();
+        light = hardwareMap.get(Servo.class, "light");
+        light.setPosition(0);
     }
 
     private void resetDriveMotors() {
@@ -64,6 +68,12 @@ public class MyTeleOp extends OpMode {
         panelsTelemetry.update(telemetry);
         launcher.update();
         panelsTelemetry.update();
+
+        if(launcher.getFlywheelRPM() > 0){
+            light.setPosition(1);
+        } else if(light.getPosition() > 0){
+            light.setPosition(0);
+        }
     }
 
     @SuppressLint("NewApi")

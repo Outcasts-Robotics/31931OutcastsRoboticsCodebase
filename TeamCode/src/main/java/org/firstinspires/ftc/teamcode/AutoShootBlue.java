@@ -17,11 +17,12 @@ public class AutoShootBlue extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         waitForStart();
+        TelemetryManager panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         final DcMotor frontLeft = hardwareMap.get(DcMotor.class, "fl");
         final DcMotor frontRight = hardwareMap.get(DcMotor.class, "fr");
         final DcMotor rearRight = hardwareMap.get(DcMotor.class, "rr");
         final DcMotor rearLeft = hardwareMap.get(DcMotor.class, "rl");
-        final Launcher launcher = new Launcher(hardwareMap, gamepad1);
+        final Launcher launcher = new Launcher(hardwareMap, gamepad1, panelsTelemetry);
 
         launcher.init();
 
