@@ -9,8 +9,10 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.DoubleConsumer;
 
 public class Launcher {
@@ -23,9 +25,9 @@ public class Launcher {
     private final DoubleConsumer powerSetter;
 
     private volatile double targetRpm = 0;
-    private final double shootRpm = 5000.0;
 
-    private Thread launchThread;
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private Future<?> launchTask;
 
     public Launcher(HardwareMap hardwareMap,
                     Gamepad gamepad,
@@ -63,51 +65,39 @@ public class Launcher {
 
     public void update() {
         if (gamepad.xWasPressed()) {
-
             launch();
         }
     }
 
-
     public void launch() {
-
-        if (launchThread != null && launchThread.isAlive()) return;
-
-        launchThread = new Thread(() -> {
-            try {
-                setTargetRpm(shootRpm);
-
-
-                ElapsedTime timer = new ElapsedTime();
-                timer.reset();
-
-                long start = System.currentTimeMillis();
-                while (!Thread.currentThread().isInterrupted()
-                        && Math.abs(getFlywheelRPM() - shootRpm) > 50
-                        && System.currentTimeMillis() - start < 2500) {
-
-                    Thread.yield();
-                }
-
-
-                if (Thread.currentThread().isInterrupted()) return;
-
-
-                openGate();
-                Thread.sleep(1000L);
-                closeGate();
-
-                setTargetRpm(0);
-
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        });
-
-        launchThread.start();
+        if (launchTask != null && !launchTask.isDone()) return;
+        launchTask = executor.submit(launchRunnable);
     }
 
+    private final Runnable launchRunnable = () -> {
+        try {
+            double shootRpm = 5000.0;
+            setTargetRpm(shootRpm);
 
+            long start = System.currentTimeMillis();
+            while (!Thread.currentThread().isInterrupted()
+                    && Math.abs(getFlywheelRPM() - shootRpm) > 50
+                    && System.currentTimeMillis() - start < 2500) {
+                Thread.yield();
+            }
+
+            if (Thread.currentThread().isInterrupted()) return;
+
+            openGate();
+            Thread.sleep(1000);
+            closeGate();
+
+            setTargetRpm(0);
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    };
 
     private void setTargetRpm(double rpm) {
         targetRpm = rpm;
@@ -129,10 +119,10 @@ public class Launcher {
     }
 
     public void onStop() {
-        if (launchThread != null && launchThread.isAlive()) {
-            launchThread.interrupt();
+        if (launchTask != null) {
+            launchTask.cancel(true);
         }
-
+        executor.shutdownNow();
         pidController.stop();
         powerSetter.accept(0);
         closeGate();
@@ -142,4 +132,3 @@ public class Launcher {
         return targetRpm;
     }
 }
-//blaahhhhhs
