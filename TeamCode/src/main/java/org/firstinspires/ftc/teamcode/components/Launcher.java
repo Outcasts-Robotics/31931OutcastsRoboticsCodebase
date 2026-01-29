@@ -32,6 +32,40 @@ public class Launcher {
     private long lastPidTime = 0;
 
     public void launch() {
+        // Set target RPM and reset PID
+        setTargetRpm(SHOOT_RPM);
+        
+        // Wait for flywheel to reach target speed
+        long startTime = System.currentTimeMillis();
+        while (System.currentTimeMillis() - startTime < SPINUP_TIMEOUT_MS) {
+            runPid(System.currentTimeMillis());
+            if (Math.abs(getFlywheelRPM() - SHOOT_RPM) <= RPM_TOLERANCE) {
+                break;
+            }
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return;
+            }
+        }
+        
+        // Open gate to feed disc
+        openGate();
+        
+        // Keep gate open for 1 second
+        try {
+            Thread.sleep(GATE_OPEN_MS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return;
+        }
+        
+        // Close gate and stop flywheel
+        closeGate();
+        setTargetRpm(0);
+        flywheel.setPower(0);
+        flywheel2.setPower(0);
     }
 
     private enum State {
