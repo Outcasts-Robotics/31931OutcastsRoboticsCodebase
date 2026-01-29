@@ -34,7 +34,7 @@ public class AutoShootBlue extends LinearOpMode {
         rearLeft.setPower(-.3);
         rearRight.setPower(-.3);
 
-        Thread.sleep(1000);
+        Thread.sleep(700);
 
         frontLeft.setPower(0);
         frontRight.setPower(0);
