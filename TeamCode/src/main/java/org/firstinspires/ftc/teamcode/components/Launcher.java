@@ -3,17 +3,11 @@ package org.firstinspires.ftc.teamcode.components;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
-import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.function.DoubleConsumer;
 
 public class Launcher {
 
@@ -21,37 +15,46 @@ public class Launcher {
     private final DcMotorEx flywheel2;
     private final Gamepad gamepad;
     private final Servo gate;
-    private final PIDController pidController;
-    private final DoubleConsumer powerSetter;
 
-    private volatile double targetRpm = 0;
+    private double targetRpm = 0;
 
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private Future<?> launchTask;
+    private static final double SHOOT_RPM = 5000.0;
+    private static final double RPM_TOLERANCE = 50.0;
+    private static final long SPINUP_TIMEOUT_MS = 2500;
+    private static final long GATE_OPEN_MS = 1000;
 
-    public Launcher(HardwareMap hardwareMap,
-                    Gamepad gamepad,
-                    TelemetryManager panelsTelemetry) {
+    private static final double kP = 0.00035;
+    private static final double kI = 0.0000008;
+    private static final double kD = 0.00002;
 
+    private double integral = 0;
+    private double lastError = 0;
+    private long lastPidTime = 0;
+
+    public void launch() {
+    }
+
+    private enum State {
+        IDLE,
+        SPINUP,
+        FEED
+    }
+
+    private State state = State.IDLE;
+    private long stateStartTime = 0;
+
+    public Launcher(HardwareMap hardwareMap, Gamepad gamepad) {
         this.flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
         this.flywheel2 = hardwareMap.get(DcMotorEx.class, "flywheel2");
         this.gamepad = gamepad;
         this.gate = hardwareMap.get(Servo.class, "gateServo");
-
-        this.powerSetter = v -> {
-            flywheel.setPower(max(-1, min(v, 1)));
-            flywheel2.setPower(max(-1, min(v, 1)));
-        };
-
-        this.pidController =
-                new PIDController(this::getFlywheelRPM, powerSetter, panelsTelemetry);
     }
 
     public void init() {
         flywheel.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-        flywheel.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
-
         flywheel2.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+
+        flywheel.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
         flywheel2.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
 
         flywheel.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -60,48 +63,70 @@ public class Launcher {
         gate.setDirection(Servo.Direction.REVERSE);
         closeGate();
 
-        pidController.start();
+        lastPidTime = System.currentTimeMillis();
     }
 
     public void update() {
-        if (gamepad.xWasPressed()) {
-            launch();
+        long now = System.currentTimeMillis();
+
+        if (gamepad.xWasPressed() && state == State.IDLE) {
+            setTargetRpm(SHOOT_RPM);
+            transition(State.SPINUP);
+        }
+
+        runPid(now);
+
+        switch (state) {
+            case IDLE:
+                break;
+
+            case SPINUP:
+                boolean atSpeed = Math.abs(getFlywheelRPM() - SHOOT_RPM) <= RPM_TOLERANCE;
+                boolean timeout = now - stateStartTime >= SPINUP_TIMEOUT_MS;
+
+                if (atSpeed || timeout) {
+                    openGate();
+                    transition(State.FEED);
+                }
+                break;
+
+            case FEED:
+                if (now - stateStartTime >= GATE_OPEN_MS) {
+                    closeGate();
+                    setTargetRpm(0);
+                    transition(State.IDLE);
+                }
+                break;
         }
     }
 
-    public void launch() {
-        if (launchTask != null && !launchTask.isDone()) return;
-        launchTask = executor.submit(launchRunnable);
+    private void runPid(long now) {
+        double dt = (now - lastPidTime) / 1000.0;
+        lastPidTime = now;
+
+        if (dt <= 0) return;
+
+        double error = targetRpm - getFlywheelRPM();
+        integral += error * dt;
+        double derivative = (error - lastError) / dt;
+        lastError = error;
+
+        double output = kP * error + kI * integral + kD * derivative;
+        output = max(-1, min(output, 1));
+
+        flywheel.setPower(output);
+        flywheel2.setPower(output);
     }
 
-    private final Runnable launchRunnable = () -> {
-        try {
-            double shootRpm = 5000.0;
-            setTargetRpm(shootRpm);
-
-            long start = System.currentTimeMillis();
-            while (!Thread.currentThread().isInterrupted()
-                    && Math.abs(getFlywheelRPM() - shootRpm) > 50
-                    && System.currentTimeMillis() - start < 2500) {
-                Thread.yield();
-            }
-
-            if (Thread.currentThread().isInterrupted()) return;
-
-            openGate();
-            Thread.sleep(1000);
-            closeGate();
-
-            setTargetRpm(0);
-
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-    };
+    private void transition(State newState) {
+        state = newState;
+        stateStartTime = System.currentTimeMillis();
+    }
 
     private void setTargetRpm(double rpm) {
         targetRpm = rpm;
-        pidController.setTarget(targetRpm);
+        integral = 0;
+        lastError = 0;
     }
 
     public double getFlywheelRPM() {
@@ -119,12 +144,10 @@ public class Launcher {
     }
 
     public void onStop() {
-        if (launchTask != null) {
-            launchTask.cancel(true);
-        }
-        executor.shutdownNow();
-        pidController.stop();
-        powerSetter.accept(0);
+        state = State.IDLE;
+        setTargetRpm(0);
+        flywheel.setPower(0);
+        flywheel2.setPower(0);
         closeGate();
     }
 
