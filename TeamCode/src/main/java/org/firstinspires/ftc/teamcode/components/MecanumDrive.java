@@ -1,13 +1,11 @@
 package org.firstinspires.ftc.teamcode.components;
 
-import com.pedropathing.ftc.drivetrains.MecanumConstants;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 import java.util.function.DoubleSupplier;
@@ -19,6 +17,9 @@ public class MecanumDrive {
     private final DcMotorEx backLeftMotor;
     private final DcMotorEx backRightMotor;
     private final DoubleSupplier yawInRadProvider;
+    public DcMotorEx[] getMotors() {
+        return new DcMotorEx[]{frontLeftMotor, frontRightMotor, backLeftMotor, backRightMotor};
+    }
 
     public MecanumDrive(HardwareMap hw, DoubleSupplier yawInRadProvider) {
         frontLeftMotor = hw.get(DcMotorEx.class, "fl");
@@ -35,6 +36,7 @@ public class MecanumDrive {
         backRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         maxPower = 1;
         this.yawInRadProvider = yawInRadProvider;
+
 
     }
 
@@ -69,7 +71,4 @@ public class MecanumDrive {
         }
     }
 
-    public void freeze() {
-        setDrive(0,0,0,false);
-    }
 }

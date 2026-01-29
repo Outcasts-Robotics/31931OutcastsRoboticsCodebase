@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-
 import android.annotation.SuppressLint;
 
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -10,10 +9,10 @@ import com.pedropathing.ftc.localization.localizers.PinpointLocalizer;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.components.Launcher;
 import org.firstinspires.ftc.teamcode.components.MecanumDrive;
-
 
 @TeleOp(name = "MyTeleOp", group = "TeleOp")
 public class MyTeleOp extends OpMode {
@@ -24,20 +23,40 @@ public class MyTeleOp extends OpMode {
 
     @Override
     public void init() {
-        pinpointLocalizer = new PinpointLocalizer(hardwareMap, new PinpointConstants().hardwareMapName("pinpoint").forwardPodY(-2).strafePodX(-6.5).forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED).strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD));
+        pinpointLocalizer = new PinpointLocalizer(
+                hardwareMap,
+                new PinpointConstants()
+                        .hardwareMapName("pinpoint")
+                        .forwardPodY(-2)
+                        .strafePodX(-6.5)
+                        .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED)
+                        .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
+        );
         pinpointLocalizer.resetIMU();
         mecanumDrive = new MecanumDrive(hardwareMap, () -> pinpointLocalizer.getPose().getHeading());
+        resetDriveMotors();
         launcher = new Launcher(hardwareMap, gamepad1);
         launcher.init();
+    }
+
+    private void resetDriveMotors() {
+        for (DcMotor motor : mecanumDrive.getMotors()) {
+            motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            motor.setPower(0);
+        }
     }
 
     @Override
     public void loop() {
         pinpointLocalizer.update();
         mecanumDrive.update(gamepad1);
+
         if (gamepad1.optionsWasPressed()) {
             pinpointLocalizer.resetIMU();
+            resetDriveMotors();
         }
+
         panelsTelemetry.addData("Target RPM", launcher.getTargetRpm());
         panelsTelemetry.addData("Current RPM", launcher.getFlywheelRPM());
         panelsTelemetry.addData("Pose", pinpointLocalizer.getPose());
@@ -45,13 +64,14 @@ public class MyTeleOp extends OpMode {
         panelsTelemetry.update(telemetry);
         launcher.update();
         panelsTelemetry.update();
-
     }
 
     @SuppressLint("NewApi")
     @Override
     public void stop() {
         launcher.onStop();
+        for (DcMotor motor : mecanumDrive.getMotors()) {
+            motor.setPower(0);
+        }
     }
 }
-//faaaaaaahddddss
