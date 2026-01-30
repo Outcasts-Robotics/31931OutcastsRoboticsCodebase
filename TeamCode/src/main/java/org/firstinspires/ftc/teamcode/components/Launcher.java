@@ -106,6 +106,8 @@ public class Launcher {
     public void update() {
         long now = System.currentTimeMillis();
 
+
+
         if (gamepad.xWasPressed() && state == State.IDLE) {
             setTargetRpm(SHOOT_RPM);
             transition(State.SPINUP);
