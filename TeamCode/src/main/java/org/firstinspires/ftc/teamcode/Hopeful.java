@@ -29,12 +29,12 @@ public class Hopeful extends LinearOpMode {
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         rearLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        frontLeft.setPower(1);
-        frontRight.setPower(1);
-        rearLeft.setPower(1);
-        rearRight.setPower(1);
+        frontLeft.setPower(.5);
+        frontRight.setPower(.5);
+        rearLeft.setPower(.5);
+        rearRight.setPower(.5);
 
-        Thread.sleep(4000);
+        Thread.sleep(1000);
 
         frontLeft.setPower(0);
         frontRight.setPower(0);
@@ -43,8 +43,8 @@ public class Hopeful extends LinearOpMode {
         telemetry.addLine("Turning...");
         telemetry.update();
 
-        frontRight.setPower(1);
-        rearLeft.setPower(1);
+        frontRight.setPower(.2);
+        rearLeft.setPower(.2);
         Thread.sleep(200);
         frontRight.setPower(0);
         rearLeft.setPower(0);
