@@ -44,10 +44,10 @@ public class Hopeful extends LinearOpMode {
         telemetry.addLine("Turning...");
         telemetry.update();
 
-        frontRight.setPower(.2);
-        frontLeft.setPower(-.2);
-        rearRight.setPower(-.2);
-        rearLeft.setPower(.2);
+        frontRight.setPower(.5);
+        frontLeft.setPower(-.5);
+        rearRight.setPower(-.5);
+        rearLeft.setPower(.5);
 
         Thread.sleep(1000);
         frontLeft.setPower(0);
