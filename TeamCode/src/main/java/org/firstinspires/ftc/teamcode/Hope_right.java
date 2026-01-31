@@ -75,7 +75,7 @@ public class Hope_right extends LinearOpMode {
         rearLeft.setPower(0.5);
         rearRight.setPower(0.5);
 
-        sleep(400);
+        sleep(500);
         frontLeft.setPower(0);
         frontRight.setPower(0);
         rearLeft.setPower(0);
