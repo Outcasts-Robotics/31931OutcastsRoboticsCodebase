@@ -141,6 +141,7 @@ public class Launcher {
             setTargetRpm(-350);
             openGate();
             transition(State.REVERSE_FEED);
+            setTargetRpm(-350);
             openGate();
             transition(State.REVERSE_FEED);
         }
