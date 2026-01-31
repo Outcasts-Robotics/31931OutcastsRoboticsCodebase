@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import org.firstinspires.ftc.teamcode.components.Launcher;
 
 @Autonomous
-public class Hopeful extends LinearOpMode {
+public class Hope_right extends LinearOpMode {
     @SuppressLint("NewApi")
     @Override
     public void runOpMode() {
@@ -57,10 +57,10 @@ public class Hopeful extends LinearOpMode {
         telemetry.update();
 
         // 🔄 Clean tank turn (in place)
-        frontLeft.setPower(-0.5);
-        rearLeft.setPower(-0.5);
-        frontRight.setPower(0.5);
-        rearRight.setPower(0.5);
+        frontLeft.setPower(0.5);
+        rearLeft.setPower(0.5);
+        frontRight.setPower(-0.5);
+        rearRight.setPower(-0.5);
 
         sleep(500);
 
