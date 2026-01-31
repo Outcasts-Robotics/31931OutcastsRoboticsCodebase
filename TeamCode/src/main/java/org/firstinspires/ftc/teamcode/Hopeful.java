@@ -15,64 +15,60 @@ import org.firstinspires.ftc.teamcode.components.Launcher;
 public class Hopeful extends LinearOpMode {
     @SuppressLint("NewApi")
     @Override
-    public void runOpMode() throws InterruptedException {
-        waitForStart();
+    public void runOpMode() {
+
         TelemetryManager telemetry = PanelsTelemetry.INSTANCE.getTelemetry();
+
         final DcMotor frontLeft = hardwareMap.get(DcMotor.class, "fl");
         final DcMotor frontRight = hardwareMap.get(DcMotor.class, "fr");
         final DcMotor rearRight = hardwareMap.get(DcMotor.class, "rr");
         final DcMotor rearLeft = hardwareMap.get(DcMotor.class, "rl");
-        final Launcher launcher = new Launcher(hardwareMap, gamepad1, telemetry);
 
+        final Launcher launcher = new Launcher(hardwareMap, gamepad1, telemetry);
         launcher.init();
 
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         rearLeft.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        frontLeft.setPower(.5);
-        frontRight.setPower(.5);
-        rearLeft.setPower(.5);
-        rearRight.setPower(.5);
+        // 🔒 BRAKE when power = 0
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rearLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rearRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        Thread.sleep(2000);
+        waitForStart();
 
+        // Drive forward
+        frontLeft.setPower(0.5);
+        frontRight.setPower(0.5);
+        rearLeft.setPower(0.5);
+        rearRight.setPower(0.5);
+
+        sleep(2000);
+
+        // Stop
         frontLeft.setPower(0);
         frontRight.setPower(0);
         rearLeft.setPower(0);
         rearRight.setPower(0);
-        Thread.sleep(500);
+
+        sleep(500);
         telemetry.addLine("Turning...");
         telemetry.update();
 
-        frontRight.setPower(.5);
-        frontLeft.setPower(-.5);
-        rearRight.setPower(-.5);
-        rearLeft.setPower(.5);
+        // 🔄 Clean tank turn (in place)
+        frontLeft.setPower(-0.5);
+        rearLeft.setPower(-0.5);
+        frontRight.setPower(0.5);
+        rearRight.setPower(0.5);
 
-        Thread.sleep(1000);
+        sleep(1000);
+
+        // Final stop
         frontLeft.setPower(0);
         frontRight.setPower(0);
         rearLeft.setPower(0);
         rearRight.setPower(0);
         telemetry.update();
-
-       /* Thread.sleep(500);
-        telemetry.addLine("Launching...");
-        telemetry.update();
-
-
-        launcher.launch();
-        Thread.sleep(300);
-
-
-        telemetry.addLine("Stopping launcher");
-        telemetry.update();
-        launcher.onStop();
-        telemetry.addLine("Stopped launcher");
-        telemetry.update();
-
-*/
-
     }
 }
-//blahh
