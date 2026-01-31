@@ -138,10 +138,10 @@ public class Launcher {
         if (gamepad.triangleWasPressed() && state == State.IDLE) {
 
 
-            setTargetRpm(-350);
+            setTargetRpm(-500);
             openGate();
             transition(State.REVERSE_FEED);
-            setTargetRpm(-350);
+            setTargetRpm(-500);
             openGate();
             transition(State.REVERSE_FEED);
         }
