@@ -113,12 +113,23 @@ public class Launcher {
             transition(State.SPINUP);
         }
 
+        if (gamepad.triangleWasPressed() && state == State.IDLE) {
+            openGate();
+            setTargetRpm(-120);
+
+            transition(State.SPINUP);
+        }
+
+
+
+
+
         switch (state) {
             case IDLE:
                 break;
 
             case SPINUP:
-                boolean atSpeed = Math.abs(getFlywheelRPM() - SHOOT_RPM) <= RPM_TOLERANCE;
+                boolean atSpeed = Math.abs(getFlywheelRPM() - targetRpm) <= RPM_TOLERANCE;
                 boolean timeout = now - stateStartTime >= SPINUP_TIMEOUT_MS;
 
                 if (atSpeed || timeout) {
