@@ -22,7 +22,7 @@ public class Launcher {
     private double targetRpm = 0;
 
 
-    private static final double SHOOT_RPM = 5500.0;
+    private static final double SHOOT_RPM = 5100.0;
     private static final double RPM_TOLERANCE = 50.0;
     private static final long SPINUP_TIMEOUT_MS = 2500;
     private static final long GATE_OPEN_MS = 1000;
@@ -138,10 +138,10 @@ public class Launcher {
         if (gamepad.triangleWasPressed() && state == State.IDLE) {
 
 
-            setTargetRpm(-500);
+            setTargetRpm(-350);
             openGate();
             transition(State.REVERSE_FEED);
-            setTargetRpm(-500);
+            setTargetRpm(-350);
             openGate();
             transition(State.REVERSE_FEED);
         }
