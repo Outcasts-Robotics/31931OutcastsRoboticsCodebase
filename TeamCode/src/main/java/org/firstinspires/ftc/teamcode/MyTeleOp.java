@@ -7,13 +7,19 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.ftc.localization.constants.PinpointConstants;
 import com.pedropathing.ftc.localization.localizers.PinpointLocalizer;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.VoltageUnit;
 import org.firstinspires.ftc.teamcode.components.Launcher;
 import org.firstinspires.ftc.teamcode.components.MecanumDrive;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @TeleOp(name = "MyTeleOp", group = "TeleOp")
 public class MyTeleOp extends OpMode {
@@ -22,6 +28,13 @@ public class MyTeleOp extends OpMode {
     private PinpointLocalizer pinpointLocalizer;
     private Launcher launcher;
     private Servo light;
+    double voltage;
+    double current;
+    List<LynxModule> hubs = hardwareMap.getAll(LynxModule.class);
+    LynxModule controlHub = hubs.get(0);
+    LynxModule expansionHub = hubs.get(1);
+
+
 
     @Override
     public void init() {
@@ -41,6 +54,13 @@ public class MyTeleOp extends OpMode {
         launcher.init();
         light = hardwareMap.get(Servo.class, "light");
         light.setPosition(0);
+
+        controlHub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+        expansionHub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+        voltage = controlHub.getInputVoltage(VoltageUnit.VOLTS);
+        current = controlHub.getCurrent(CurrentUnit.AMPS);
+
+
     }
 
     private void resetDriveMotors() {
@@ -53,6 +73,9 @@ public class MyTeleOp extends OpMode {
 
     @Override
     public void loop() {
+        voltage = controlHub.getInputVoltage(VoltageUnit.VOLTS);
+        current = controlHub.getCurrent(CurrentUnit.AMPS);
+
         pinpointLocalizer.update();
         mecanumDrive.update(gamepad1);
 
