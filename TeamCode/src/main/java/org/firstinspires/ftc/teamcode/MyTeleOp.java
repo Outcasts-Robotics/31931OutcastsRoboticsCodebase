@@ -30,10 +30,9 @@ public class MyTeleOp extends OpMode {
     private Servo light;
     double voltage;
     double current;
-    List<LynxModule> hubs = hardwareMap.getAll(LynxModule.class);
-    LynxModule controlHub = hubs.get(0);
-    LynxModule expansionHub = hubs.get(1);
 
+    LynxModule controlHub;
+    LynxModule expansionHub;
 
 
     @Override
@@ -54,6 +53,9 @@ public class MyTeleOp extends OpMode {
         launcher.init();
         light = hardwareMap.get(Servo.class, "light");
         light.setPosition(0);
+        List<LynxModule> hubs = hardwareMap.getAll(LynxModule.class);
+        controlHub = hubs.get(0);
+        expansionHub = hubs.get(1);
 
         controlHub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         expansionHub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
