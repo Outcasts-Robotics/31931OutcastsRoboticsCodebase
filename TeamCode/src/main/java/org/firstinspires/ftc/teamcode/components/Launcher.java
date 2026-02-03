@@ -125,10 +125,6 @@ public class Launcher {
         long now = System.currentTimeMillis();
 
 
-
-
-
-
         if (gamepad.xWasPressed() && state == State.IDLE) {
             setTargetRpm(SHOOT_RPM);
             transition(State.SPINUP);
@@ -138,10 +134,10 @@ public class Launcher {
         if (gamepad.triangleWasPressed() && state == State.IDLE) {
 
 
-            setTargetRpm(-350);
+            setTargetRpm(-800);
             openGate();
             transition(State.REVERSE_FEED);
-            setTargetRpm(-350);
+            setTargetRpm(-800);
             openGate();
             transition(State.REVERSE_FEED);
         }
