@@ -114,7 +114,7 @@ public class Launcher {
         }
 
         if (gamepad.triangleWasPressed() && state == State.IDLE) {
-            setTargetRpm(-220);
+            setTargetRpm(-750);
             transition(State.SPINUP);
         }
 
