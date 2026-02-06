@@ -1,7 +1,9 @@
 repositories {
     mavenCentral()
     google() // Needed for androidx
-    maven { url = "https://mymaven.bylazar.com/releases" }
+    maven { url = "https://mymaven.bylazar.com/releases"
+        url = "https://repo.dairy.foundation/releases"
+    }
 }
 
 dependencies {
@@ -16,10 +18,12 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
 
     implementation 'com.pedropathing:ftc:2.0.2'
+    implementation("dev.frozenmilk.sinister:Sloth:0.2.4")
     implementation 'com.pedropathing:telemetry:1.0.0'
     implementation 'com.bylazar:fullpanels:1.0.6'
 
     testImplementation "junit:junit:4.13.2"
     testImplementation "org.mockito:mockito-core:5.20.0"
+
 }
 
