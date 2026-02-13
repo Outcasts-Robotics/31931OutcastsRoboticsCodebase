@@ -15,35 +15,27 @@
 buildscript {
     repositories {
         mavenCentral()
-        maven {
-            url "https://repo.dairy.foundation/releases"
-        }
     }
     dependencies {
-        classpath "dev.frozenmilk:Load:0.2.4"
     }
 }
 apply from: '../build.common.gradle'
 apply from: '../build.dependencies.gradle'
-apply plugin: 'dev.frozenmilk.sinister.sloth.load'
+
+allprojects {
+    repositories {
+        mavenCentral()
+        google()
+        maven {
+            url = "https://mymaven.bylazar.com/releases"
+        }
+    }
+}
 
 
 repositories {
-    // Dairy releases repository
-    maven {
-        url = "https://repo.dairy.foundation/releases"
-    }
-    // Dairy snapshots repository
-    maven {
-        url = "https://repo.dairy.foundation/snapshots"
+}
 
-    }
-}
-repositories {
-    maven {
-        url = "https://repo.dairy.foundation/releases"
-    }
-}
 android {
     namespace = 'org.firstinspires.ftc.teamcode'
 
@@ -52,6 +44,7 @@ android {
         minSdk 24
     }
 
+
     packagingOptions {
         jniLibs.useLegacyPackaging true
     }
@@ -59,5 +52,4 @@ android {
 
 dependencies {
     implementation project(':FtcRobotController')
-    implementation 'com.bylazar:fullpanels:1.0.7'
 }

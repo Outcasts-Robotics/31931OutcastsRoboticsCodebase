@@ -42,6 +42,7 @@ public class Intake {
         this.time = DEFAULT_TIME;
     }
 
+
     public void speedUp(double power){
         PowerTarget = 1 * power;
         this.time = DEFAULT_TIME;
