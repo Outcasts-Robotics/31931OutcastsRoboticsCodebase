@@ -44,7 +44,7 @@ public class Hopeful extends LinearOpMode {
         rearLeft.setPower(0.5);
         rearRight.setPower(0.5);
 
-        sleep((long) (2000*1.5));
+        sleep(2900);
 
         // Stop
         frontLeft.setPower(0);
@@ -75,7 +75,7 @@ public class Hopeful extends LinearOpMode {
         rearLeft.setPower(0.5);
         rearRight.setPower(0.5);
 
-        sleep(500);
+        sleep(300);
         frontLeft.setPower(0);
         frontRight.setPower(0);
         rearLeft.setPower(0);
