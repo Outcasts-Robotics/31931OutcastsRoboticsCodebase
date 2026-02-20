@@ -18,7 +18,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.VoltageUnit;
 import org.firstinspires.ftc.teamcode.components.Launcher;
 import org.firstinspires.ftc.teamcode.components.MecanumDrive;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @TeleOp(name = "MyTeleOp", group = "TeleOp")
@@ -49,18 +48,20 @@ public class MyTeleOp extends OpMode {
         pinpointLocalizer.resetIMU();
         mecanumDrive = new MecanumDrive(hardwareMap, () -> pinpointLocalizer.getPose().getHeading());
         resetDriveMotors();
-        launcher = new Launcher(hardwareMap, gamepad1, panelsTelemetry);
-        launcher.init();
-        light = hardwareMap.get(Servo.class, "light");
-        light.setPosition(0);
         List<LynxModule> hubs = hardwareMap.getAll(LynxModule.class);
         controlHub = hubs.get(0);
         expansionHub = hubs.get(1);
 
         controlHub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
         expansionHub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+
         voltage = controlHub.getInputVoltage(VoltageUnit.VOLTS);
         current = controlHub.getCurrent(CurrentUnit.AMPS);
+        launcher = new Launcher(hardwareMap, gamepad1, panelsTelemetry, () -> controlHub.getInputVoltage(VoltageUnit.VOLTS));
+        launcher.init();
+        light = hardwareMap.get(Servo.class, "light");
+        light.setPosition(0);
+
 
 
     }

@@ -1,12 +1,19 @@
 package org.firstinspires.ftc.teamcode.components;
 
 
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+
+import java.util.function.DoubleSupplier;
 
 
 public class Launcher {
@@ -26,7 +33,7 @@ public class Launcher {
     private static final double RPM_TOLERANCE = 50.0;
     private static final long SPINUP_TIMEOUT_MS = 2500;
     private static final long GATE_OPEN_MS = 1000;
-
+    private static final double STALL_AMP = 11.5;
 
     public void launch() {
         // Set target RPM
@@ -77,6 +84,7 @@ public class Launcher {
 
     private State state = State.IDLE;
     private long stateStartTime = 0;
+    private DoubleSupplier voltageFunc;
 
 
     public Launcher(HardwareMap hardwareMap, Gamepad gamepad, TelemetryManager telemetryManager) {
@@ -89,12 +97,37 @@ public class Launcher {
         this.pidController = new PIDController(
                 this::getFlywheelRPM,
                 power -> {
-                    double clampedPower = Math.max(-1, Math.min(1, power));
+                    double clampedPower = max(-1, min(1, power));
                     flywheel.setPower(clampedPower);
                     flywheel2.setPower(clampedPower);
                 },
                 telemetryManager
         );
+
+    }
+
+    public Launcher(HardwareMap hardwareMap, Gamepad gamepad, TelemetryManager telemetryManager, DoubleSupplier voltage) {
+        this.flywheel = hardwareMap.get(DcMotorEx.class, "flywheel");
+        this.flywheel2 = hardwareMap.get(DcMotorEx.class, "flywheel2");
+        this.gamepad = gamepad;
+        this.gate = hardwareMap.get(Servo.class, "gateServo");
+        this.voltageFunc = voltage;
+
+        // Initialize PIDController with current state supplier and power setter
+        this.pidController = new PIDController(
+                this::getFlywheelRPM,
+                power -> {
+                    double compensation = min(max(this.voltageFunc.getAsDouble() /13, .7), 1.3);
+                    if(flywheel.getCurrent(CurrentUnit.AMPS) > STALL_AMP) {
+                        compensation = compensation * .75;
+                    }
+                    double clampedPower = max(-1, min(1, power * compensation ));
+                    flywheel.setPower(clampedPower);
+                    flywheel2.setPower(clampedPower);
+                },
+                telemetryManager
+        );
+
     }
 
 
