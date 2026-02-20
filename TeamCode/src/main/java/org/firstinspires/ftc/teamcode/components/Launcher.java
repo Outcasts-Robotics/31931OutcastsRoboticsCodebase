@@ -117,8 +117,8 @@ public class Launcher {
         this.pidController = new PIDController(
                 this::getFlywheelRPM,
                 power -> {
-                    double compensation = min(max(this.voltageFunc.getAsDouble() /13, .7), 1.3);
-                    if(flywheel.getCurrent(CurrentUnit.AMPS) > STALL_AMP) {
+                    double compensation = min(max(13/ this.voltageFunc.getAsDouble(), .7), 1.3);
+                    if(flywheel.getCurrent(CurrentUnit.AMPS) > STALL_AMP * .8) {
                         compensation = compensation * .75;
                     }
                     double clampedPower = max(-1, min(1, power * compensation ));
