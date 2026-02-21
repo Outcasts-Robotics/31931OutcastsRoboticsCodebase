@@ -26,7 +26,6 @@ public class MyTeleOp extends OpMode {
     private MecanumDrive mecanumDrive;
     private PinpointLocalizer pinpointLocalizer;
     private Launcher launcher;
-    private Servo light;
     double voltage;
     double current;
 
@@ -59,8 +58,7 @@ public class MyTeleOp extends OpMode {
         current = controlHub.getCurrent(CurrentUnit.AMPS);
         launcher = new Launcher(hardwareMap, gamepad1, panelsTelemetry, () -> controlHub.getInputVoltage(VoltageUnit.VOLTS));
         launcher.init();
-        light = hardwareMap.get(Servo.class, "light");
-        light.setPosition(0);
+
 
 
 
@@ -95,11 +93,6 @@ public class MyTeleOp extends OpMode {
         launcher.update();
         panelsTelemetry.update();
 
-        if(launcher.getFlywheelRPM() > 0){
-            light.setPosition(1);
-        } else if(light.getPosition() > 0){
-            light.setPosition(0);
-        }
     }
 
     @SuppressLint("NewApi")
